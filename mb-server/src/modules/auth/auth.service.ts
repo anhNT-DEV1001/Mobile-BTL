@@ -35,7 +35,6 @@ export class AuthService {
             updatedAt: user.updatedAt
         }
         const tokens = await this.genarateTokens(userRes.id, userRes.email);
-
         const hashRt = await bcrypt.hash(tokens.refreshToken, 10);
         const existToken = await this.tokenModel.findOne({ createdBy: user._id });
         if (existToken) {

@@ -11,8 +11,10 @@ export const envVariable = () => {
             replica: process.env.MONGO_REPLICA_SET
         },
         jwt: {
-            secret: process.env.JWT_SECRET,
-            exprisIn: process.env.JWT_EXPRISIN
+            accessSecret: String(process.env.JWT_ACCESS_SECRET),
+            accessExpriseIn: String(process.env.JWT_ACCESS_EXPRISEIN),
+            refreshSecret: String(process.env.JWT_REFRESH_SECRET),
+            refreshExpriseIn: String(process.env.JWT_REFRESH_EXPRISEIN)
         }
     }
 }

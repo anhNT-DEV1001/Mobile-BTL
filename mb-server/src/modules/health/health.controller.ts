@@ -1,13 +1,13 @@
 import { Controller, Get } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
-import { ApiResponse } from 'src/common/api';
+import { BaseResponse } from 'src/common/api';
 
 @ApiTags('Health check')
 @Controller('health')
 export class HealthController {
     @Get()
     @ApiOperation({ summary: "Test health check" })
-    getHealthCheck(): ApiResponse<string> {
+    getHealthCheck(): BaseResponse<string> {
         return {
             status: 'success',
             message: 'Server đang chạy thành công !',

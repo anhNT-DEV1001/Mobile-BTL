@@ -7,7 +7,7 @@ export default function HomeScreen() {
 
     return (
         <View className="flex-1 items-center justify-center bg-green-100">
-            <Text className="text-xl font-bold mb-6">DIT ME MAY</Text>
+            <Text className="text-xl font-bold mb-6">Tuấn Anh</Text>
 
             <TouchableOpacity
                 className="bg-red-500 px-4 py-2 rounded"

@@ -3,9 +3,6 @@
   "compilerOptions": {
     "strict": true,
     "paths": {
-      "@env": [
-        "./env.d.ts"
-      ],
       "@/*": [
         "./*"
       ]
@@ -15,6 +12,8 @@
     "**/*.ts",
     "**/*.tsx",
     ".expo/types/**/*.ts",
-    "expo-env.d.ts"
+    "expo-env.d.ts",
+    "nativewind.d.ts",
+    "nativewind-env.d.ts"
   ]
 }

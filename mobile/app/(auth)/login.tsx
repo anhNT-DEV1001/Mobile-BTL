@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { View, Text, TextInput, TouchableOpacity } from "react-native";
 import { useRouter } from "expo-router";
-// import '../../global.css'
 
 export default function LoginScreen() {
     const router = useRouter();
@@ -40,7 +39,7 @@ export default function LoginScreen() {
                 className="bg-blue-500 px-4 py-2 rounded w-full items-center"
                 onPress={handleLogin}
             >
-                <Text className="text-white font-semibold">Login</Text>
+                <Text className="text-white font-semibold">Loginâdadadadaad</Text>
             </TouchableOpacity>
         </View>
     );

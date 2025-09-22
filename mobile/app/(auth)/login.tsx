@@ -43,7 +43,7 @@ export default function LoginScreen() {
                 <Text className="text-white font-semibold">Login</Text>
             </TouchableOpacity>
 
-            <Button title="Test button"></Button>
+            {/* <Button className="bg-blue-500 px-4 py-2 rounded w-full items-center" title="Test button" /> */}
 
         </View>
     );

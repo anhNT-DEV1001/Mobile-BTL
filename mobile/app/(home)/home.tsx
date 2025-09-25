@@ -12,7 +12,7 @@ export default function HomeScreen() {
                 className="bg-red-500 px-4 py-2 rounded"
                 onPress={() => router.replace("/(auth)/login")}
             >
-                <Text className="text-white font-semibold">Đăng xuất</Text>
+                <Text className="text-white font-semibold">Logout</Text>
             </TouchableOpacity>
         </View>
     );

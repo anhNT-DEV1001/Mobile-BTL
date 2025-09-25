@@ -1,4 +1,3 @@
-import { Exercise } from './../../modules/exercises/schema/exercises.schema';
 export enum ExerciseForce {
     PUSH = 'push',
     PULL = 'pull',
@@ -34,7 +33,7 @@ export enum ExerciseEquipment {
     EXERCISE_BALL = 'exercise_ball'
 }
 
-export enum ExerciseMechanic{
+export enum ExerciseMechanic {
     COMPOUND = 'compound',
     ISOLATION = 'isolation'
 }

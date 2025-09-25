@@ -3,11 +3,12 @@ import { UserService } from './user.service';
 import { CreateUserDto, UpdateUserDto } from './dto/req/user.request';
 import { UserResponse } from './dto/res/user.response';
 import { BaseResponse } from 'src/common/api';
-import { ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { Roles } from 'src/common/decorators/role.decorator';
-import { UserRole } from 'src/common/enums';
+import { BearerType, UserRole } from 'src/common/enums';
 
 @ApiTags('Users')
+@ApiBearerAuth(BearerType.AccessToken)
 @Controller('user')
 export class UserController {
     constructor(private userService: UserService) { }
@@ -39,8 +40,6 @@ export class UserController {
             data: res
         }
     }
-
-
 
     @Patch(':id')
     @ApiResponse({

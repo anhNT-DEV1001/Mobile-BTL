@@ -15,7 +15,7 @@ import { MongooseModule } from '@nestjs/mongoose';
                     dbName: config.get<string>('db.name'),
                     replicaSet: config.get<string>('db.replica'),
                     authSource: 'admin',
-                    serverSelectionTimeoutMS: 5000,
+                    serverSelectionTimeoutMS: 8000,
                     directConnection: false
                 }
             }

@@ -1,13 +1,14 @@
 import { BaseResponse } from './../../common/api/response.api';
 import { Controller, Get, Query } from '@nestjs/common';
 import { ExercisesService } from './exercises.service';
-import { ApiResponse } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiResponse } from '@nestjs/swagger';
 import { ExerciseResponse } from './dto/res/exercise.response';
-import { Public } from 'src/common/decorators/public.decorator';
 import { ExerciseQuery } from './dto/req/exercise.request';
+import { BearerType } from 'src/common/enums';
 
 
 @Controller('exercises')
+@ApiBearerAuth(BearerType.AccessToken)
 export class ExercisesController {
     constructor(private exerciseService: ExercisesService) { }
     // @Public()

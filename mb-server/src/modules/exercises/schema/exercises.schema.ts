@@ -36,6 +36,8 @@ export class Exercise {
 
     @Prop({ unique: true })
     id: string;
+    @Prop()
+    gif: string;
 }
 
 export type ExerciseDocument = HydratedDocument<Exercise>;

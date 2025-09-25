@@ -11,7 +11,6 @@ import { BearerType } from 'src/common/enums';
 @ApiBearerAuth(BearerType.AccessToken)
 export class ExercisesController {
     constructor(private exerciseService: ExercisesService) { }
-    // @Public()
     @Get()
     @ApiResponse({
         status: 200,

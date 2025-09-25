@@ -8,7 +8,7 @@ import { ExerciseQuery } from './dto/req/exercise.request';
 @Injectable()
 export class ExercisesService {
     constructor(@InjectModel(Exercise.name) private exerciseModel: Model<ExerciseDocument>) { }
-    toExerciseResponse(exercise: ExerciseDocument) {
+    toExerciseResponse(exercise: ExerciseDocument): ExerciseResponse {
         return {
             _id: exercise._id.toString(),
             name: exercise.name,
@@ -22,6 +22,7 @@ export class ExercisesService {
             category: exercise.category,
             images: exercise.images,
             id: exercise.id,
+            gif: exercise.gif
         }
     }
 
@@ -66,11 +67,4 @@ export class ExercisesService {
         const items = itemsDocs.map(ex => this.toExerciseResponse(ex));
         return { items, total, page, limit };
     }
-
-
-
-
-
-
-
 }

@@ -1,6 +1,4 @@
-import { InjectModel } from '@nestjs/mongoose';
 import { ApiProperty } from '@nestjs/swagger';
-import { Exercise } from './../../schema/exercises.schema';
 export class ExerciseResponse {
     @ApiProperty()
     _id: string;
@@ -26,4 +24,6 @@ export class ExerciseResponse {
     images: string[]
     @ApiProperty()
     id: string;
+    @ApiProperty()
+    gif: string
 }

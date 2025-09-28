@@ -1,5 +1,6 @@
 import { ApiProperty } from "@nestjs/swagger";
 import { TimeStamp } from "src/common/metadata";
+import { Profile } from "../../schema/profile";
 
 export class UserResponse extends TimeStamp {
     @ApiProperty()
@@ -11,7 +12,5 @@ export class UserResponse extends TimeStamp {
     @ApiProperty()
     status: string;
     @ApiProperty()
-    name?: string
-    @ApiProperty()
-    dob?: Date;
+    profile?: Profile
 }

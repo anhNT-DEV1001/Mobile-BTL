@@ -19,7 +19,7 @@ import { ExercisesModule } from './modules/exercises/exercises.module';
     DatabaseModule,
     UserModule,
     AuthModule,
-    ExercisesModule
+    ExercisesModule,
   ],
   controllers: [HealthController],
   providers: [

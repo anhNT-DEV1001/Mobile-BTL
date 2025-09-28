@@ -24,6 +24,7 @@ import { Token, TokenSchema } from './schema/token.schema';
     })
   ],
   controllers: [AuthController],
-  providers: [AuthService, JwtStrategy]
+  providers: [AuthService, JwtStrategy],
+  exports: [MongooseModule]
 })
 export class AuthModule { }

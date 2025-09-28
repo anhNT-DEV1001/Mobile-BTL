@@ -2,6 +2,7 @@ import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 import { HydratedDocument } from "mongoose";
 import { UserRole, UserStatus } from "src/common/enums";
 import { TimeStamp } from "src/common/metadata";
+import { Profile } from "./profile";
 
 @Schema({ timestamps: true })
 export class User extends TimeStamp {
@@ -20,11 +21,8 @@ export class User extends TimeStamp {
     @Prop({ enum: UserStatus, default: UserStatus.INACTIVE })
     status: string;
 
-    @Prop()
-    name: string;
-
-    @Prop()
-    dob: Date;
+    @Prop({ nullable: true })
+    profile: Profile
 }
 
 export type UserDocument = HydratedDocument<User>;

@@ -1,16 +1,21 @@
 import { HttpStatus, Injectable } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
+import { InjectConnection, InjectModel } from '@nestjs/mongoose';
 import { User, UserDocument } from './schema/user.schema';
-import { Model } from 'mongoose';
+import { Connection, Model } from 'mongoose';
 import { CreateUserDto, UpdateUserDto } from './dto/req/user.request';
 import { UserStatus } from 'src/common/enums';
 import * as bcrypt from 'bcrypt';
 import { UserResponse } from './dto/res/user.response';
 import { ApiError } from 'src/common/api';
+import { Token, TokenDocument } from '../auth/schema/token.schema';
 
 @Injectable()
 export class UserService {
-    constructor(@InjectModel(User.name) private userModel: Model<UserDocument>) { }
+    constructor(
+        @InjectModel(Token.name) private tokenModel: Model<TokenDocument>,
+        @InjectModel(User.name) private userModel: Model<UserDocument>,
+        @InjectConnection() private conn: Connection,
+    ) { }
 
     toUserResponse(user: UserDocument): UserResponse {
         return {
@@ -18,8 +23,13 @@ export class UserService {
             email: user.email,
             role: user.role,
             status: user.status,
-            name: user.name,
-            dob: user.dob,
+            profile: {
+                avatar: user.profile.avatar,
+                name: user.profile.name,
+                dob: user.profile.dob,
+                height: user.profile.height,
+                weight: user.profile.weight
+            },
             createdAt: user.createdAt,
             updatedAt: user.updatedAt
         }
@@ -28,15 +38,15 @@ export class UserService {
     async createUser(userData: CreateUserDto): Promise<UserResponse> {
         const existUser = await this.userModel.findOne({ email: userData.email });
         if (existUser) throw new ApiError('Thông tin người dùng tồn tại !', HttpStatus.BAD_REQUEST);
-
         const hashPass = await bcrypt.hash(userData.password, 10);
-        const dto: CreateUserDto = {
+        const data = {
             ...userData,
             password: hashPass,
-            status: userData.isActive ? UserStatus.ACTIVE : UserStatus.INACTIVE,
+            isActive: userData.profile ? true : false,
+            status: userData.profile ? UserStatus.ACTIVE : UserStatus.INACTIVE
         }
 
-        const newUser = (await this.userModel.create(dto));
+        const newUser = await this.userModel.create(data);
         const res = this.toUserResponse(newUser);
         return res;
     }
@@ -54,11 +64,20 @@ export class UserService {
         return res;
     }
 
-    async deleteUser(id: string): Promise<UserResponse> {
-        const user = await this.userModel.findByIdAndDelete(id);
-        if (!user) throw new ApiError('Xóa người dùng thất bại !', HttpStatus.BAD_REQUEST);
-        return this.toUserResponse(user);
-
+    // version thêm transaction
+    async deleteUser(id: string): Promise<UserResponse | any> {
+        const session = await this.conn.startSession();
+        session.startTransaction();
+        try {
+            await this.tokenModel.findOneAndDelete({ createdBy: id });
+            const user = await this.userModel.findByIdAndDelete({ id });
+            if (!user) throw new ApiError('Xóa người dùng thất bại !', HttpStatus.BAD_REQUEST);
+            await session.commitTransaction();
+            return this.toUserResponse(user);
+        } catch (error) {
+            await session.abortTransaction()
+        }
+        session.endSession();
     }
 
     async findUserByEmail(email: string): Promise<UserDocument> {

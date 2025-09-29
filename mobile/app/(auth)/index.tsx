@@ -3,7 +3,7 @@ import { View, Text, TextInput, TouchableOpacity, Button } from "react-native";
 import { useRouter } from "expo-router";
 import '../../global.css';
 
-export default function LoginScreen() {
+export default function Index() {
     const router = useRouter();
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
@@ -11,7 +11,7 @@ export default function LoginScreen() {
     const handleLogin = () => {
         // TODO: gọi API hoặc check Zustand store
         if (email === "admin" && password === "123") {
-            router.replace('/(home)/home');
+            router.replace("/(home)/home");
         } else {
             alert("Sai tài khoản hoặc mật khẩu");
         }
@@ -58,7 +58,7 @@ export default function LoginScreen() {
 
                     <Text
                         className="text-center text-blue-600"
-                        onPress={() => alert('PHAI CHIU')}
+                        onPress={() => alert('Chức năng quên mật khẩu sẽ sớm có')}
                     >
                         Forgot your password?
                     </Text>

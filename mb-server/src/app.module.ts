@@ -9,6 +9,7 @@ import { RolesGuard } from './common/guards/role.guard';
 import { APP_GUARD } from '@nestjs/core';
 import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
 import { ExercisesModule } from './modules/exercises/exercises.module';
+import { WorkoutModule } from './modules/workout/workout.module';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -20,6 +21,7 @@ import { ExercisesModule } from './modules/exercises/exercises.module';
     UserModule,
     AuthModule,
     ExercisesModule,
+    WorkoutModule,
   ],
   controllers: [HealthController],
   providers: [

@@ -1,10 +1,12 @@
 import { Controller, Get } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { BaseResponse } from 'src/common/api';
+import { Public } from 'src/common/decorators/public.decorator';
 
 @ApiTags('Health check')
 @Controller('health')
 export class HealthController {
+    @Public()
     @Get()
     @ApiOperation({ summary: "Test health check" })
     getHealthCheck(): BaseResponse<string> {

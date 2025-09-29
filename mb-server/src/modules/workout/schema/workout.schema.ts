@@ -1,5 +1,6 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 import mongoose, { HydratedDocument, ObjectId } from "mongoose";
+import { WorkoutStatus } from "src/common/enums";
 import { Metadata } from "src/common/metadata";
 import { Exercise } from "src/modules/exercises/schema/exercises.schema";
 import { User } from "src/modules/user/schema/user.schema";
@@ -33,8 +34,8 @@ export class WorkOut extends Metadata {
     @Prop()
     note: string;
 
-    @Prop()
-    status: string
+    @Prop({ enum: WorkoutStatus, default: WorkoutStatus.INPROGRESS })
+    status: WorkoutStatus;
 
     @Prop({ type: mongoose.Schema.Types.ObjectId, ref: User.name })
     declare createdBy: string | ObjectId;

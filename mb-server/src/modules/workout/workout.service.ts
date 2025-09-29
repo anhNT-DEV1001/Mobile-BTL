@@ -7,6 +7,7 @@ import { caculateStrengthLevel } from 'src/common/utils';
 import { ApiError } from 'src/common/api';
 import { WorkOutLevel } from 'src/common/enums';
 import { Exercise, ExerciseDocument } from '../exercises/schema/exercises.schema';
+import { CreateWorkoutDto } from './dto/req/workout.request';
 
 @Injectable()
 export class WorkoutService {
@@ -23,14 +24,18 @@ export class WorkoutService {
         return level;
     }
 
-    async createWorkout(workoutDto: any): Promise<any> {
+    async createWorkout(workoutDto: CreateWorkoutDto, user: UserResponse): Promise<any> {
         // lưu thông thông tin workout
-        const isExercise = await this.exerciseModel.findById(workoutDto.id);
-
+        const isExercise = await this.exerciseModel.findById(workoutDto.exersie);
         if (!isExercise) throw new ApiError("Bài tập này không tồn tại !", HttpStatus.BAD_REQUEST);
         if (!workoutDto.name) workoutDto.name = isExercise.name;
-
-
+        let level: WorkOutLevel = WorkOutLevel.BEGINNER;
+        if (user.profile)
+            level = caculateStrengthLevel(user.profile?.weight, user.profile?.height, workoutDto.weight, user.profile?.gender);
+        const data = {
+            ...workoutDto,
+            userLevel: level
+        }
         const newWorkout = await this.workoutModel.create(workoutDto);
         if (!newWorkout) throw new ApiError("Tạo bài tập thất bại !", HttpStatus.BAD_REQUEST);
         return newWorkout;

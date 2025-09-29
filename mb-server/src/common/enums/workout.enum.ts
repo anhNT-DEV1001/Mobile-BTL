@@ -5,4 +5,9 @@ export enum WorkOutLevel {
     GYMLORD = 'gym lord'
 }
 
+export enum WorkoutStatus {
+    DONE = 'done',
+    INPROGRESS = 'in-progress'
+}
+
 export const WorkOutGenderFactor = 0.75;

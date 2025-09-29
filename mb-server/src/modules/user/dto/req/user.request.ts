@@ -23,7 +23,7 @@ export class CreateUserDto {
 
     @ApiProperty()
     @IsOptional()
-    profile: Profile
+    profile?: Profile
 }
 
 export class UpdateUserDto {

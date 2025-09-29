@@ -1,9 +1,10 @@
-import { Injectable } from '@nestjs/common';
+import { HttpStatus, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Exercise, ExerciseDocument } from './schema/exercises.schema';
 import { Model } from 'mongoose';
 import { ExerciseResponse } from './dto/res/exercise.response';
-import { ExerciseQuery } from './dto/req/exercise.request';
+import { CreateExerciseDto, ExerciseQuery, UpdateExerciseDto } from './dto/req/exercise.request';
+import { ApiError } from 'src/common/api';
 
 @Injectable()
 export class ExercisesService {
@@ -66,5 +67,30 @@ export class ExercisesService {
 
         const items = itemsDocs.map(ex => this.toExerciseResponse(ex));
         return { items, total, page, limit };
+    }
+
+    async createExercise(exerciseData: CreateExerciseDto): Promise<ExerciseResponse> {
+        const existExercise = await this.exerciseModel.findOne({ name: exerciseData.name });
+        if (existExercise) throw new Error('Bài tập đã tồn tại !');
+        const data = {
+            ...exerciseData
+        }
+        const newExercise = await this.exerciseModel.create(data);
+        const res = this.toExerciseResponse(newExercise);
+        return res;
+    }
+
+    async updateExercise(id: string, exerciseData: UpdateExerciseDto): Promise<ExerciseResponse> {
+        const updatedExercise = await this.exerciseModel.findByIdAndUpdate(id, exerciseData, { new: true });
+        if (!updatedExercise) throw new ApiError('Cập nhật bài tập thất bại !', HttpStatus.BAD_REQUEST);
+        const res = this.toExerciseResponse(updatedExercise);
+        return res;
+    }
+
+    async deleteExercise(id: string): Promise<ExerciseResponse> {
+        const deletedExercise = await this.exerciseModel.findByIdAndDelete(id);
+        if (!deletedExercise) throw new ApiError('Xóa bài tập thất bại !', HttpStatus.BAD_REQUEST);
+        const res = this.toExerciseResponse(deletedExercise);
+        return res;
     }
 }

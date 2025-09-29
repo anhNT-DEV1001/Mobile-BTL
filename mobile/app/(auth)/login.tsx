@@ -5,46 +5,65 @@ import '../../global.css';
 
 export default function LoginScreen() {
     const router = useRouter();
-    const [username, setUsername] = useState("");
+    const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
 
     const handleLogin = () => {
         // TODO: gọi API hoặc check Zustand store
-        if (username === "admin" && password === "123") {
-            router.replace("/(home)/home");
+        if (email === "admin" && password === "123") {
+            router.replace("/(home)/(profile)/profile");
         } else {
             alert("Sai tài khoản hoặc mật khẩu");
         }
     };
 
     return (
-        <View className="flex-1 items-center justify-center bg-teal-50- px-4">
-            <Text className="text-2xl font-bold mb-6">Welcom to Strength Level</Text>
+        <View className="flex-1 bg-white">
+            <View className="flex-1 items-center justify-center px-6 w-full">
+                <View className="w-full">
+                    <Text className="text-2xl font-bold text-center mb-1">Log In</Text>
+                    <Text className="text-center text-gray-600 mb-6">
+                        Need an account?{' '}
+                        <Text
+                            className="text-blue-600 font-medium"
+                            onPress={() => alert('Đi tới trang đăng ký sau')}
+                        >
+                            Register
+                        </Text>
+                    </Text>
 
-            <TextInput
-                className="border w-full px-3 py-2 mb-4 rounded-sm "
-                placeholder="Your email"
-                value={username}
-                onChangeText={setUsername}
-            />
+                    <TextInput
+                        className="border border-gray-300 w-full px-3 py-2 rounded mb-4"
+                        placeholder="Email"
+                        value={email}
+                        onChangeText={setEmail}
+                        keyboardType="email-address"
+                        autoCapitalize="none"
+                    />
 
-            <TextInput
-                className="border w-full px-3 py-2 rounded mb-4"
-                placeholder="Password"
-                secureTextEntry
-                value={password}
-                onChangeText={setPassword}
-            />
+                    <TextInput
+                        className="border border-gray-300 w-full px-3 py-2 rounded mb-4"
+                        placeholder="Password"
+                        secureTextEntry
+                        value={password}
+                        onChangeText={setPassword}
+                    />
 
-            <TouchableOpacity
-                className="bg-blue-500 px-4 py-2 rounded w-full items-center"
-                onPress={handleLogin}
-            >
-                <Text className="text-white font-semibold">Login</Text>
-            </TouchableOpacity>
+                    <TouchableOpacity
+                        className="bg-blue-600 px-4 py-3 rounded w-full items-center mb-3"
+                        onPress={handleLogin}
+                    >
+                        <Text className="text-white font-semibold">Log In</Text>
+                    </TouchableOpacity>
 
-            {/* <Button className="bg-blue-500 px-4 py-2 rounded w-full items-center" title="Test button" /> */}
-
+                    <Text
+                        className="text-center text-blue-600"
+                        onPress={() => alert('PHAI CHIU')}
+                    >
+                        Forgot your password?
+                    </Text>
+                </View>
+            </View>
         </View>
     );
 }

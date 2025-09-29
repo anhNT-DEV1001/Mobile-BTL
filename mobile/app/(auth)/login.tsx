@@ -11,7 +11,7 @@ export default function LoginScreen() {
     const handleLogin = () => {
         // TODO: gọi API hoặc check Zustand store
         if (email === "admin" && password === "123") {
-            router.replace("/(home)/home");
+            router.replace("/(home)/(profile)/profile");
         } else {
             alert("Sai tài khoản hoặc mật khẩu");
         }
@@ -58,7 +58,7 @@ export default function LoginScreen() {
 
                     <Text
                         className="text-center text-blue-600"
-                        onPress={() => alert('Chức năng quên mật khẩu sẽ sớm có')}
+                        onPress={() => alert('PHAI CHIU')}
                     >
                         Forgot your password?
                     </Text>

@@ -1,6 +1,7 @@
 import { UserRole, UserStatus } from "src/common/enums";
 import { IsBoolean, IsEmail, IsEnum, IsNotEmpty, IsOptional, MaxLength, MinLength } from 'class-validator';
 import { ApiProperty } from "@nestjs/swagger";
+import { Profile } from "../../schema/profile";
 
 export class CreateUserDto {
     @ApiProperty()
@@ -22,22 +23,7 @@ export class CreateUserDto {
 
     @ApiProperty()
     @IsOptional()
-    @IsBoolean({ message: 'Trạng thái không hợp lệ !' })
-    isActive?: boolean;
-
-    @ApiProperty()
-    @IsOptional()
-    @IsEnum(UserStatus, { message: 'Trạng thái không hợp lệ !' })
-    status?: UserStatus;
-
-    @ApiProperty()
-    @IsOptional()
-    @MaxLength(50, { message: 'Email có tối đa 50 ký tự !' })
-    name: string
-
-    @ApiProperty()
-    @IsOptional()
-    dob: Date
+    profile?: Profile
 }
 
 export class UpdateUserDto {
@@ -70,12 +56,7 @@ export class UpdateUserDto {
 
     @ApiProperty()
     @IsOptional()
-    @MaxLength(50, { message: 'Email có tối đa 50 ký tự !' })
-    name: string
-
-    @ApiProperty()
-    @IsOptional()
-    dob: Date
+    profile?: Profile
 }
 
 

@@ -1,6 +1,5 @@
 import { View, Text, TouchableOpacity } from "react-native";
 import { useRouter } from "expo-router";
-// import '../../global.css';
 
 export default function HomeScreen() {
     const router = useRouter();
@@ -13,7 +12,7 @@ export default function HomeScreen() {
                 className="bg-red-500 px-4 py-2 rounded"
                 onPress={() => router.replace("/(auth)/login")}
             >
-                <Text className="text-white font-semibold">CUT</Text>
+                <Text className="text-white font-semibold">Logout</Text>
             </TouchableOpacity>
         </View>
     );

@@ -1,13 +1,14 @@
 import { Body, Controller, Get, HttpCode, HttpStatus, Post, Req, UseGuards } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { LoginDto, RefreshDto } from './dto/req/auth.request';
-import { ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { BaseResponse } from 'src/common/api';
 import { LoginResponse, TokensResponse } from './dto/res/auth.response';
 import { UserResponse } from '../user/dto/res/user.response';
 import { Public } from 'src/common/decorators/public.decorator';
 import { CurrentUser } from 'src/common/decorators/user-current.decorator';
 import { CreateUserDto } from '../user/dto/req/user.request';
+import { BearerType } from 'src/common/enums';
 
 @ApiTags('Authentication')
 @Controller('auth')
@@ -31,6 +32,7 @@ export class AuthController {
     }
 
     @Get('me')
+    @ApiBearerAuth(BearerType.AccessToken)
     @ApiResponse({
         status: 200,
         type: UserResponse

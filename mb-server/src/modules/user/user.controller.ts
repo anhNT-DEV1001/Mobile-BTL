@@ -48,7 +48,7 @@ export class UserController {
     })
     @ApiParam({ name: 'id', description: 'User ID' })
     async updateUserController(
-        @Param() id: string,
+        @Param('id') id: string,
         @Body() userData: UpdateUserDto
     ): Promise<BaseResponse<UserResponse>> {
         const response = await this.userService.updateUser(id, userData);
@@ -65,7 +65,7 @@ export class UserController {
         type: UserResponse
     })
     @ApiParam({ name: 'id', description: 'User ID' })
-    async deleteUserController(@Param() id: string): Promise<BaseResponse<UserResponse>> {
+    async deleteUserController(@Param('id') id: string): Promise<BaseResponse<UserResponse>> {
         const response = await this.userService.deleteUser(id);
         return {
             status: 'success',

@@ -45,7 +45,7 @@ export class ExercisesController {
     })
     @ApiParam({ name: 'id', description: 'Exercise ID' })
     async updateExerciseController(
-        @Param() id: string,
+        @Param('id') id: string,
         @Body() exerciseData: UpdateExerciseDto
     ): Promise<BaseResponse<ExerciseResponse>> {
         const response = await this.exerciseService.updateExercise(id, exerciseData);
@@ -62,7 +62,7 @@ export class ExercisesController {
         type: ExerciseResponse
     })
     @ApiParam({ name: 'id', description: 'Exercise ID' })
-    async deleteExerciseController(@Param() id: string): Promise<BaseResponse<ExerciseResponse>> {
+    async deleteExerciseController(@Param('id') id: string): Promise<BaseResponse<ExerciseResponse>> {
         const response = await this.exerciseService.deleteExercise(id);
         return {
             status: 'success',

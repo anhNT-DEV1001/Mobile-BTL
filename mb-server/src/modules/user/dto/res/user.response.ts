@@ -12,5 +12,5 @@ export class UserResponse extends TimeStamp {
     @ApiProperty()
     status: string;
     @ApiProperty()
-    profile?: Profile
+    profile?: Profile | null
 }

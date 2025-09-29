@@ -23,14 +23,14 @@ export class UserService {
             email: user.email,
             role: user.role,
             status: user.status,
-            profile: {
+            profile: user.profile ? {
                 avatar: user.profile.avatar,
                 name: user.profile.name,
                 gender: user.profile.gender,
                 dob: user.profile.dob,
                 height: user.profile.height,
                 weight: user.profile.weight
-            },
+            } : null,
             createdAt: user.createdAt,
             updatedAt: user.updatedAt
         }

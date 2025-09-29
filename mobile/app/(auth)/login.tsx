@@ -11,7 +11,7 @@ export default function LoginScreen() {
     const handleLogin = () => {
         // TODO: gọi API hoặc check Zustand store
         if (email === "admin" && password === "123") {
-            router.replace("/(home)/(profile)/profile");
+            router.replace('/(home)/home');
         } else {
             alert("Sai tài khoản hoặc mật khẩu");
         }

@@ -3,7 +3,7 @@ import { View, Text, TextInput, TouchableOpacity, Button } from "react-native";
 import { useRouter } from "expo-router";
 import '../../global.css';
 
-export default function LoginScreen() {
+export default function Index() {
     const router = useRouter();
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");

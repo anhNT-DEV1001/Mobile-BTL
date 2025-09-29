@@ -3,7 +3,7 @@ import { UserService } from './user.service';
 import { CreateUserDto, UpdateUserDto } from './dto/req/user.request';
 import { UserResponse } from './dto/res/user.response';
 import { BaseResponse } from 'src/common/api';
-import { ApiBearerAuth, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { Roles } from 'src/common/decorators/role.decorator';
 import { BearerType, UserRole } from 'src/common/enums';
 
@@ -46,6 +46,7 @@ export class UserController {
         status: 200,
         type: UserResponse
     })
+    @ApiParam({ name: 'id', description: 'User ID' })
     async updateUserController(
         @Param() id: string,
         @Body() userData: UpdateUserDto
@@ -63,6 +64,7 @@ export class UserController {
         status: 200,
         type: UserResponse
     })
+    @ApiParam({ name: 'id', description: 'User ID' })
     async deleteUserController(@Param() id: string): Promise<BaseResponse<UserResponse>> {
         const response = await this.userService.deleteUser(id);
         return {

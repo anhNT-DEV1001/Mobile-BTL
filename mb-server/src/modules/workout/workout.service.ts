@@ -19,6 +19,7 @@ export class WorkoutService {
 
     toWorkoutResponse(workout: WorkOutDocument): WorkoutResponse {
         return {
+            id: workout._id.toString(),
             name: workout.name as string,
             exersie: workout.exersie as string,
             weight: workout.weight,

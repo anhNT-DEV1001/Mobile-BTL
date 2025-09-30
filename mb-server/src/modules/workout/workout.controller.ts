@@ -3,9 +3,12 @@ import { WorkoutService } from './workout.service';
 import { CurrentUser } from 'src/common/decorators/user-current.decorator';
 import { BaseResponse } from 'src/common/api';
 import { WorkoutResponse } from './dto/res/workout.response';
-import { ApiResponse } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { CreateWorkoutDto, UpdateWorkoutDto } from './dto/req/workout.request';
+import { BearerType } from 'src/common/enums';
 
+@ApiTags('Workouts')
+@ApiBearerAuth(BearerType.AccessToken)
 @Controller('workout')
 export class WorkoutController {
     constructor(private workoutService: WorkoutService) { }
@@ -71,3 +74,4 @@ export class WorkoutController {
         }
     }
 }
+

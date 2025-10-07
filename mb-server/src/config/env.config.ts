@@ -6,6 +6,7 @@ export const envVariable = () => {
             name: process.env.APP_NAME
         },
         db: {
+            uri: process.env.MONGO_URI,
             host: process.env.MONGO_HOST,
             name: process.env.MONGO_DB,
             replica: process.env.MONGO_REPLICA_SET

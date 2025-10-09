@@ -1,9 +1,10 @@
 import axios, { AxiosError } from "axios";
 import type { ApiErrorResponse } from "../types";
 import { useAuthStore } from "../stores";
+import { API_URL } from "@/src/config";
 
 export const api = axios.create({
-    baseURL: String(process.env.EXPO_PUBLIC_API_URL),
+    baseURL: API_URL,
     timeout: 10000,
 });
 

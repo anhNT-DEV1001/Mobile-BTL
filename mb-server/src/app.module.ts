@@ -27,11 +27,11 @@ import { WorkoutModule } from './modules/workout/workout.module';
   providers: [
     {
       provide: APP_GUARD,
-      useClass: JwtAuthGuard, // guard check login
+      useClass: JwtAuthGuard, 
     },
     {
       provide: APP_GUARD,
-      useClass: RolesGuard,   // guard check role
+      useClass: RolesGuard, 
     },
   ],
 })

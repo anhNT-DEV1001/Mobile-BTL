@@ -1,8 +1,9 @@
 import React, { useState } from "react";
 import { View, StyleSheet, ScrollView, KeyboardAvoidingView, Platform } from "react-native";
-import { Text, Button, TextInput, HelperText, SegmentedButtons } from "react-native-paper";
+import { Text, Button, TextInput, HelperText, SegmentedButtons, Card, ProgressBar } from "react-native-paper";
 import { useLocalSearchParams, router } from "expo-router";
 import { useAuth } from "./hooks/useAuth";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 
 export default function RegisterProfileScreen() {
     const params = useLocalSearchParams<{ email: string; password: string; name: string }>();
@@ -149,35 +150,68 @@ export default function RegisterProfileScreen() {
         >
             <ScrollView contentContainerStyle={styles.scrollView}>
                 <View style={styles.container}>
-                    <Text style={styles.title}>Thông Tin Cá Nhân</Text>
-                    <Text style={styles.subtitle}>
-                        Bước 2/2: Hoàn thiện hồ sơ
-                    </Text>
+                    {/* Header Section */}
+                    <View style={styles.header}>
+                        <MaterialCommunityIcons name="account-details" size={50} color="#0096F3" />
+                        <Text style={styles.appName}>THÔNG TIN CÁ NHÂN</Text>
+                        <Text style={styles.headerSubtitle}>Bước cuối cùng!</Text>
+                    </View>
 
-                    <Text style={styles.label}>Giới tính</Text>
+                    {/* Progress Bar */}
+                    <View style={styles.progressContainer}>
+                        <View style={styles.progressRow}>
+                            <Text style={styles.progressText}>Bước 2/2</Text>
+                            <Text style={styles.progressPercentage}>100%</Text>
+                        </View>
+                        <ProgressBar progress={1} color="#0096F3" style={styles.progressBar} />
+                    </View>
+
+                    {/* Form Card */}
+                    <Card style={styles.card}>
+                        <Card.Content>
+
+                            <Text style={styles.label}>Giới tính</Text>
                     <SegmentedButtons
                         value={gender}
                         onValueChange={(value) => setGender(value as "male" | "female")}
                         buttons={[
-                            { value: 'male', label: 'Nam', icon: 'human-male' },
-                            { value: 'female', label: 'Nữ', icon: 'human-female' }
+                            { 
+                                value: 'male', 
+                                label: 'Nam', 
+                                icon: 'human-male',
+                                style: gender === 'male' ? styles.selectedButton : styles.unselectedButton,
+                                labelStyle: gender === 'male' ? styles.selectedLabel : styles.unselectedLabel,
+                                checkedColor: 'white',
+                                uncheckedColor: '#666'
+                            },
+                            { 
+                                value: 'female', 
+                                label: 'Nữ', 
+                                icon: 'human-female',
+                                style: gender === 'female' ? styles.selectedButton : styles.unselectedButton,
+                                labelStyle: gender === 'female' ? styles.selectedLabel : styles.unselectedLabel,
+                                checkedColor: 'white',
+                                uncheckedColor: '#666'
+                            }
                         ]}
                         style={styles.segmented}
-                    />
+                            />
 
-                    <TextInput
-                        label="Ngày sinh (DD/MM/YYYY)"
-                        value={dob}
-                        onChangeText={handleDobChange}
-                        mode="outlined"
-                        style={styles.input}
-                        keyboardType="numeric"
-                        placeholder="31/12/1990"
-                        error={!!errors.dob}
-                        maxLength={10}
-                        disabled={registerMutation.isPending}
-                        right={<TextInput.Icon icon="calendar" />}
-                    />
+                            <TextInput
+                                label="Ngày sinh (DD/MM/YYYY)"
+                                value={dob}
+                                onChangeText={handleDobChange}
+                                mode="outlined"
+                                style={styles.input}
+                                keyboardType="numeric"
+                                placeholder="31/12/1990"
+                                error={!!errors.dob}
+                                maxLength={10}
+                                disabled={registerMutation.isPending}
+                                outlineColor="#E0E0E0"
+                                activeOutlineColor="#0096F3"
+                                left={<TextInput.Icon icon="calendar" />}
+                            />
                     {errors.dob ? (
                         <HelperText type="error" visible={!!errors.dob}>
                             {errors.dob}
@@ -188,59 +222,72 @@ export default function RegisterProfileScreen() {
                         </HelperText>
                     )}
 
-                    <TextInput
-                        label="Chiều cao (cm)"
-                        value={height}
-                        onChangeText={setHeight}
-                        mode="outlined"
-                        style={styles.input}
-                        keyboardType="numeric"
-                        placeholder="170"
-                        error={!!errors.height}
-                        disabled={registerMutation.isPending}
-                    />
+                            <TextInput
+                                label="Chiều cao (cm)"
+                                value={height}
+                                onChangeText={setHeight}
+                                mode="outlined"
+                                style={styles.input}
+                                keyboardType="numeric"
+                                placeholder="170"
+                                error={!!errors.height}
+                                disabled={registerMutation.isPending}
+                                outlineColor="#E0E0E0"
+                                activeOutlineColor="#0096F3"
+                                left={<TextInput.Icon icon="human-male-height" />}
+                            />
                     {errors.height ? (
                         <HelperText type="error" visible={!!errors.height}>
                             {errors.height}
                         </HelperText>
                     ) : null}
 
-                    <TextInput
-                        label="Cân nặng (kg)"
-                        value={weight}
-                        onChangeText={setWeight}
-                        mode="outlined"
-                        style={styles.input}
-                        keyboardType="numeric"
-                        placeholder="65"
-                        error={!!errors.weight}
-                        disabled={registerMutation.isPending}
-                    />
+                            <TextInput
+                                label="Cân nặng (kg)"
+                                value={weight}
+                                onChangeText={setWeight}
+                                mode="outlined"
+                                style={styles.input}
+                                keyboardType="numeric"
+                                placeholder="65"
+                                error={!!errors.weight}
+                                disabled={registerMutation.isPending}
+                                outlineColor="#E0E0E0"
+                                activeOutlineColor="#0096F3"
+                                left={<TextInput.Icon icon="weight-kilogram" />}
+                            />
                     {errors.weight ? (
                         <HelperText type="error" visible={!!errors.weight}>
                             {errors.weight}
                         </HelperText>
                     ) : null}
 
-                    <View style={styles.buttonContainer}>
-                        <Button 
-                            mode="outlined"
-                            onPress={handleBack}
-                            style={[styles.button, styles.backButton]}
-                            disabled={registerMutation.isPending}
-                        >
-                            Quay lại
-                        </Button>
-                        <Button 
-                            mode="contained"
-                            onPress={handleRegister}
-                            style={[styles.button, styles.registerButton]}
-                            loading={registerMutation.isPending}
-                            disabled={registerMutation.isPending}
-                        >
-                            Đăng ký
-                        </Button>
-                    </View>
+                            <View style={styles.buttonContainer}>
+                                <Button 
+                                    mode="outlined"
+                                    onPress={handleBack}
+                                    style={[styles.button, styles.backButton]}
+                                    disabled={registerMutation.isPending}
+                                    labelStyle={styles.backButtonLabel}
+                                    icon="arrow-left"
+                                >
+                                    Quay lại
+                                </Button>
+                                <Button 
+                                    mode="contained"
+                                    onPress={handleRegister}
+                                    style={[styles.button, styles.registerButton]}
+                                    loading={registerMutation.isPending}
+                                    disabled={registerMutation.isPending}
+                                    labelStyle={styles.registerButtonLabel}
+                                    icon="check"
+                                    contentStyle={styles.registerButtonContent}
+                                >
+                                    Đăng ký
+                                </Button>
+                            </View>
+                        </Card.Content>
+                    </Card>
                 </View>
             </ScrollView>
         </KeyboardAvoidingView>
@@ -250,54 +297,117 @@ export default function RegisterProfileScreen() {
 const styles = StyleSheet.create({
     keyboardView: {
         flex: 1,
+        backgroundColor: "#F8F9FA",
     },
     scrollView: {
         flexGrow: 1,
+        paddingTop: 20,
     },
     container: {
         flex: 1,
-        justifyContent: "center",
         padding: 20,
-        backgroundColor: "#fff",
+        paddingBottom: 40,
     },
-    title: {
-        fontSize: 32,
+    header: {
+        alignItems: "center",
+        marginBottom: 24,
+    },
+    appName: {
+        fontSize: 24,
         fontWeight: "bold",
-        marginBottom: 8,
-        textAlign: "center",
-        color: "#1a1a1a",
+        color: "#0096F3",
+        marginTop: 10,
+        letterSpacing: 1,
     },
-    subtitle: {
-        fontSize: 16,
-        marginBottom: 30,
-        textAlign: "center",
+    headerSubtitle: {
+        fontSize: 14,
         color: "#666",
+        marginTop: 5,
+    },
+    progressContainer: {
+        marginBottom: 20,
+    },
+    progressRow: {
+        flexDirection: "row",
+        justifyContent: "space-between",
+        marginBottom: 8,
+    },
+    progressText: {
+        fontSize: 14,
+        fontWeight: "600",
+        color: "#0096F3",
+    },
+    progressPercentage: {
+        fontSize: 14,
+        fontWeight: "600",
+        color: "#0096F3",
+    },
+    progressBar: {
+        height: 8,
+        borderRadius: 4,
+    },
+    card: {
+        borderRadius: 20,
+        elevation: 4,
+        backgroundColor: "#fff",
     },
     label: {
         fontSize: 16,
-        fontWeight: "500",
-        marginBottom: 8,
-        color: "#333",
+        fontWeight: "600",
+        marginBottom: 12,
+        marginTop: 8,
+        color: "#1C1C1C",
     },
     segmented: {
         marginBottom: 20,
     },
+    selectedButton: {
+        backgroundColor: '#0096F3', // Màu giống button Quay lại & Đăng ký
+    },
+    unselectedButton: {
+        backgroundColor: 'transparent',
+    },
+    selectedLabel: {
+        color: 'white',
+        fontWeight: 'bold',
+    },
+    unselectedLabel: {
+        color: '#666',
+    },
     input: {
         marginBottom: 8,
+        backgroundColor: "#fff",
     },
     buttonContainer: {
         flexDirection: "row",
-        marginTop: 20,
-        gap: 10,
+        marginTop: 24,
+        gap: 12,
     },
     button: {
         flex: 1,
-        paddingVertical: 6,
+        paddingVertical: 8,
+        borderRadius: 12,
     },
     backButton: {
-        borderColor: "#6200ee",
+        borderColor: "#0096F3",
+        borderWidth: 2,
+    },
+    backButtonLabel: {
+        color: "#0096F3",
+        fontWeight: "bold",
+        fontSize: 15,
     },
     registerButton: {
+        backgroundColor: "#0096F3",
+        elevation: 2,
+    },
+    registerButtonLabel: {
+        color: "#ffffff",
+        fontWeight: "bold",
+        fontSize: 15,
+    },
+    registerButtonContent: {
+        flexDirection: "row-reverse",
     },
 });
 

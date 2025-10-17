@@ -14,10 +14,13 @@ export default function LoginScreen() {
 
     const handleLogin = async () => {
         if(!email || !password) return; 
+        
+        console.log("🔐 Đang đăng nhập với email:", email);
+        
         try {
             await login({email, password});
         } catch (error : any) {
-            console.log("Lỗi đăng nhập :" , error.message)
+            console.error("Lỗi đăng nhập:", error.message);
         }
     };
 

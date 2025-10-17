@@ -1,11 +1,13 @@
-import { useCurrentUser } from "../../common/stores";
 import { View, StyleSheet, ScrollView, TouchableOpacity } from "react-native";
-import { Button, Text, Avatar, Surface } from "react-native-paper";
+import { Button, Text, Avatar, Surface, ActivityIndicator } from "react-native-paper";
 import { useAuth } from "../auth/hooks/useAuth";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { useHome } from "./hooks/useHome";
+import { useAuthStore } from "@/src/common/stores";
 
 export default function HomeScreen() {
-    const currentUser = useCurrentUser();
+    const currentUser = useAuthStore((state) => state.user);
+    const { workoutsQuery } = useHome();
     const {logout , logoutMutation} = useAuth();
     const handleLogout = async () => {
         try {
@@ -18,7 +20,7 @@ export default function HomeScreen() {
     return (
         <ScrollView style={styles.scrollView}>
             <Surface style={styles.header} elevation={2}>
-                <Text style={styles.headerTitle}>STRENGTH LEVEL</Text>
+                <Text style={styles.headerTitle}>VAI LON</Text>
                 <TouchableOpacity onPress={handleLogout}>
                     <Avatar.Image 
                         size={50} 
@@ -42,17 +44,19 @@ export default function HomeScreen() {
 
             <View style={styles.statsContainer}>
                 <View style={styles.statItem}>
-                    <Text style={styles.statNumber}>0</Text>
+                    <Text style={styles.statNumber}>
+                        {workoutsQuery.data?.data?.length || 0}
+                    </Text>
                     <Text style={styles.statLabel}>WORKOUTS</Text>
                 </View>
-                <View style={styles.statItem}>
+                {/* <View style={styles.statItem}>
                     <Text style={styles.statNumber}>0</Text>
                     <Text style={styles.statLabel}>FOLLOWERS</Text>
                 </View>
                 <View style={styles.statItem}>
                     <Text style={styles.statNumber}>0</Text>
                     <Text style={styles.statLabel}>FOLLOWING</Text>
-                </View>
+                </View> */}
             </View>
 
             <Surface style={styles.powerSection} elevation={1}>
@@ -71,21 +75,21 @@ export default function HomeScreen() {
                     <MaterialCommunityIcons name="clipboard-list" size={24} color="black" />
                     <Text style={styles.menuText}>Exercises</Text>
                 </TouchableOpacity>
-                <TouchableOpacity style={styles.menuItem}>
+                {/* <TouchableOpacity style={styles.menuItem}>
                     <MaterialCommunityIcons name="scale-bathroom" size={24} color="black" />
                     <Text style={styles.menuText}>Bodyweight</Text>
-                </TouchableOpacity>
+                </TouchableOpacity> */}
                 <TouchableOpacity style={styles.menuItem}>
                     <MaterialCommunityIcons name="tape-measure" size={24} color="black" />
                     <Text style={styles.menuText}>Measurements</Text>
                 </TouchableOpacity>
-                <TouchableOpacity style={styles.menuItem}>
+                {/* <TouchableOpacity style={styles.menuItem}>
                     <MaterialCommunityIcons name="import" size={24} color="black" />
                     <Text style={styles.menuText}>Import</Text>
-                </TouchableOpacity>
+                </TouchableOpacity> */}
             </View>
 
-            <Surface style={styles.discordSection} elevation={1}>
+            {/* <Surface style={styles.discordSection} elevation={1}>
                 <MaterialCommunityIcons name="message-outline" size={40} color="white" />
                 <Text style={styles.discordTitle}>Join our Discord Server</Text>
                 <Text style={styles.discordDescription}>
@@ -98,7 +102,7 @@ export default function HomeScreen() {
                 >
                     Join us on Discord
                 </Button>
-            </Surface>
+            </Surface> */}
         </ScrollView>
     );
 }

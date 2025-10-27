@@ -9,7 +9,7 @@ import { router } from "expo-router";
 
 export default function HomeScreen() {
     const currentUser = useAuthStore((state) => state.user);
-    const { workoutsQuery } = useHome();
+    const { workoutsQuery , userWorkoutLevel } = useHome();
     const {logout , logoutMutation} = useAuth();
     const handleLogout = async () => {
         try {
@@ -39,7 +39,7 @@ export default function HomeScreen() {
                     style={styles.profileAvatar}
                 />
                 <Text style={styles.username}>{currentUser?.profile?.name || "Unknown User"}</Text>
-                <Text style={styles.userId}>{currentUser?.profile?.id || "ID Not Available"}</Text>
+                {/* <Text style={styles.userId}>{currentUser?.profile?.id || "ID Not Available"}</Text> */}
                 <Button mode="outlined" style={styles.genderButton}>
                     Male
                 </Button>
@@ -65,7 +65,7 @@ export default function HomeScreen() {
             <Surface style={styles.powerSection} elevation={1}>
                 <Text style={styles.powerTitle}>Power Level</Text>
                 <Button mode="contained" style={styles.unknownButton}>
-                    Unknown
+                    {userWorkoutLevel.data?.data || ""}
                 </Button>
             </Surface>
 

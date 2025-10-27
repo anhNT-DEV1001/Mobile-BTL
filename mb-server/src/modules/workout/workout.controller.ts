@@ -73,5 +73,19 @@ export class WorkoutController {
             data: res
         }
     }
+
+    @Get('level')
+    @ApiResponse({
+        status: 200,
+        type: String
+    })
+    async userWorkoutLevel (@CurrentUser() user) : Promise<BaseResponse<any>> {
+        const res = await this.workoutService.getWoroutLevel(user);
+        return {
+            status : 'success',
+            message : 'Test',
+            data : res
+        }
+    }
 }
 

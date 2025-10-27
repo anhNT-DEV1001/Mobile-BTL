@@ -23,8 +23,8 @@ import { Token, TokenSchema } from './schema/token.schema';
       })
     })
   ],
-  controllers: [AuthController],
-  providers: [AuthService, JwtStrategy],
+  controllers: [AuthController], // dinh ngia endponit
+  providers: [AuthService, JwtStrategy], 
   exports: [MongooseModule]
 })
 export class AuthModule { }

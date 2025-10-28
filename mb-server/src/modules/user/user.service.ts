@@ -92,4 +92,8 @@ export class UserService {
         if (!user) throw new ApiError('Không tìm thấy thông tin người dùng !', HttpStatus.BAD_REQUEST);
         return user;
     }
+
+    // async userBmi(user : (UserResponse) {
+    //     const bmi = this.userBmi
+    // }
 }

@@ -11,7 +11,7 @@ import { CreateUserDto } from '../user/dto/req/user.request';
 import { BearerType } from 'src/common/enums';
 
 @ApiTags('Authentication')
-@Controller('auth')
+@Controller('auth') //  /auth/login
 export class AuthController {
     constructor(private authService: AuthService) { }
 

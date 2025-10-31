@@ -16,7 +16,21 @@ export interface Exercise {
   createdAt?: string;
   updatedAt?: string;
 }
-export const getExercises = async (payload : Exercise) : Promise<Exercise> => {
+
+interface Filters {
+  q?: string;
+  force?: string;
+  level?: string;
+  mechanic?: string;
+  equipment?: string;
+  primaryMuscles?: string;
+  category?: string;
+  sort?: string;
+  page?: string;
+  limit?: string;
+}
+
+export const getExercises = async (payload : Filters) : Promise<Exercise[]> => {
     const res = await api.get('/exercises', { params: payload });
     return res.data;
 }

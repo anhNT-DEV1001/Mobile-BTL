@@ -35,11 +35,11 @@ export default function ExerciseScreen() {
     getExercisesQuery.refetch();
   }, [filters]);
 
-  const exercises = (getExercisesQuery as any)?.data?.data || [];
+  const exercises = (getExercisesQuery as any)?.data?.data as Exercise[] || [];
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      <Text style={styles.header}>🏋️‍♀️ Danh sách Bài Tập</Text>
+      <Text style={styles.header}> Danh sách Bài Tập</Text>
 
       {/* 🔍 Tìm kiếm */}
       <View style={styles.searchContainer}>

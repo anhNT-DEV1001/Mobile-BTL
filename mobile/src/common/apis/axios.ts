@@ -2,6 +2,7 @@ import axios, { AxiosError } from "axios";
 import type { ApiErrorResponse } from "../types";
 import { useAuthStore } from "../stores";
 import { API_URL } from "@/src/config";
+import { router } from "expo-router";
 
 export const api = axios.create({
     baseURL: API_URL,
@@ -27,6 +28,7 @@ api.interceptors.response.use(
         return Promise.reject({ statusCode, message, field });
     }
     if (error.request) {
+    router.replace('/(auth)/login');
     return Promise.reject({
         statusCode: 0,
         message: "Không thể kết nối tới máy chủ",

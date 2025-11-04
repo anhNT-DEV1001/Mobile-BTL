@@ -23,7 +23,7 @@ export default function MeasurementScreen() {
             return <PaperActivityIndicator animating={true} color={headerColor} style={styles.loader} />;
         }
         if (userBmi.isError || !userBmi.data?.data) {
-            return <Text style={styles.errorText}>Không thể tải dữ liệu BMI.</Text>;
+            return <Text style={styles.errorText}>Load BMI data failed</Text>;
         }
         return (
             <>
@@ -41,7 +41,7 @@ export default function MeasurementScreen() {
             return <PaperActivityIndicator animating={true} color={headerColor} style={styles.loader} />;
         }
         if (userEnergyNeeds.isError || !userEnergyNeeds.data?.data) {
-            return <Text style={styles.errorText}>Không thể tải nhu cầu năng lượng.</Text>;
+            return <Text style={styles.errorText}>Failed to load energy needs</Text>;
         }
 
         const { bmr, energyNeeds } = userEnergyNeeds.data.data;
@@ -49,29 +49,29 @@ export default function MeasurementScreen() {
         return (
             <>
                 <View style={styles.bmrContainer}>
-                    <Text style={styles.bmrLabel}>BMR của bạn (Năng lượng nghỉ ngơi)</Text>
-                    <Text style={styles.bmrValue}>{bmr} <Text style={styles.caloriesUnit}>calories/ngày</Text></Text>
+                    <Text style={styles.bmrLabel}>Your BMR (Restinging Energy)</Text>
+                    <Text style={styles.bmrValue}>{bmr} <Text style={styles.caloriesUnit}>calories/day</Text></Text>
                 </View>
 
                 {/* Danh sách TDEE (Nhu cầu năng lượng) */}
                 <View style={styles.infoRow}>
-                    <Text style={styles.infoLabel}>Ít vận động (Không tập)</Text>
+                    <Text style={styles.infoLabel}>Sedentary (No exercise)</Text>
                     <Text style={styles.infoValue}>{energyNeeds.sedentary} cal</Text>
                 </View>
                 <View style={styles.infoRow}>
-                    <Text style={styles.infoLabel}>Vận động nhẹ (1-3 ngày/tuần)</Text>
+                    <Text style={styles.infoLabel}>Light exercise (1-3 days/week)</Text>
                     <Text style={styles.infoValue}>{energyNeeds.lightlyActive} cal</Text>
                 </View>
                 <View style={styles.infoRow}>
-                    <Text style={styles.infoLabel}>Vận động vừa (3-5 ngày/tuần)</Text>
+                    <Text style={styles.infoLabel}>Moderate exercise (3-5 days/week)</Text>
                     <Text style={styles.infoValue}>{energyNeeds.moderatelyActive} cal</Text>
                 </View>
                 <View style={styles.infoRow}>
-                    <Text style={styles.infoLabel}>Vận động nhiều (6-7 ngày/tuần)</Text>
+                    <Text style={styles.infoLabel}>Very active (6-7 days/week)</Text>
                     <Text style={styles.infoValue}>{energyNeeds.veryActive} cal</Text>
                 </View>
                 <View style={styles.infoRow}>
-                    <Text style={styles.infoLabel}>Vận động rất nhiều (2 lần/ngày)</Text>
+                    <Text style={styles.infoLabel}>Extra active(over 2 times/day)</Text>
                     <Text style={styles.infoValue}>{energyNeeds.extraActive} cal</Text>
                 </View>
             </>
@@ -95,18 +95,18 @@ export default function MeasurementScreen() {
                     <Card.Content>
                         <View style={styles.cardHeader}>
                             <MaterialCommunityIcons name="account-details" size={22} color={headerColor} />
-                            <Text style={styles.cardTitle}>Thông số của bạn</Text>
+                            <Text style={styles.cardTitle}>Your measurements</Text>
                         </View>
                         <View style={styles.infoRow}>
-                            <Text style={styles.infoLabel}>Chiều cao</Text>
+                            <Text style={styles.infoLabel}>Height</Text>
                             <Text style={styles.infoValue}>{currentUser?.profile?.height || 'N/A'} cm</Text>
                         </View>
                         <View style={styles.infoRow}>
-                            <Text style={styles.infoLabel}>Cân nặng</Text>
+                            <Text style={styles.infoLabel}>Weight</Text>
                             <Text style={styles.infoValue}>{currentUser?.profile?.weight || 'N/A'} kg</Text>
                         </View>
                         <View style={styles.infoRow}>
-                            <Text style={styles.infoLabel}>Giới tính</Text>
+                            <Text style={styles.infoLabel}>Gender</Text>
                             <Text style={[styles.infoValue, styles.capitalize]}>{currentUser?.profile?.gender || 'N/A'}</Text>
                         </View>
                     </Card.Content>
@@ -117,7 +117,7 @@ export default function MeasurementScreen() {
                     <Card.Content style={styles.bmiCardContent}>
                         <View style={styles.cardHeader}>
                             <MaterialCommunityIcons name="scale-bathroom" size={22} color={headerColor} />
-                            <Text style={styles.cardTitle}>Chỉ số BMI</Text>
+                            <Text style={styles.cardTitle}>BMI</Text>
                         </View>
                         {renderBmiContent()}
                     </Card.Content>
@@ -128,7 +128,7 @@ export default function MeasurementScreen() {
                     <Card.Content>
                         <View style={styles.cardHeader}>
                             <MaterialCommunityIcons name="fire" size={22} color={headerColor} />
-                            <Text style={styles.cardTitle}>Nhu cầu Năng lượng</Text>
+                            <Text style={styles.cardTitle}>Energy needs</Text>
                         </View>
                         {renderEnergyNeedsContent()}
                     </Card.Content>

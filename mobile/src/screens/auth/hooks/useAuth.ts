@@ -89,6 +89,8 @@ export function useAuth() {
             }
         },
         onError: (error : any) => {
+            router.replace('/(auth)/login');
+            clearAuth();
             console.error("❌ Đăng xuất thất bại!");
             console.error("Error:", error);
             

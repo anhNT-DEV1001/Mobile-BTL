@@ -23,7 +23,7 @@ export default function HomeScreen() {
     return (
         <ScrollView style={styles.scrollView}>
             <Surface style={styles.header} elevation={2}>
-                <Text style={styles.headerTitle}>VAI LON</Text>
+                <Text style={styles.headerTitle}>My strength level</Text>
                 <TouchableOpacity onPress={handleLogout}>
                     <Avatar.Image 
                         size={50} 

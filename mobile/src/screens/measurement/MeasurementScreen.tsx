@@ -80,16 +80,7 @@ export default function MeasurementScreen() {
 
     return (
         <View style={[styles.container, { backgroundColor: backgroundColor }]}>
-            {/* <Appbar.Header
-                style={[styles.header, { backgroundColor: headerColor }]}
-                statusBarHeight={0}
-            >
-                <Appbar.BackAction onPress={handleBack} color="#ffffff" />
-                <Appbar.Content title="Đo lường" titleStyle={styles.headerTitle} />
-            </Appbar.Header> */}
-
             <ScrollView contentContainerStyle={styles.scrollContent}>
-
                 {/* Thẻ thông tin cá nhân */}
                 <Card style={styles.card}>
                     <Card.Content>

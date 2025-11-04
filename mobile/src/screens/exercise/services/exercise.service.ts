@@ -1,6 +1,8 @@
 import { API_URL } from "../../../config";
 import {api} from '../../../common/apis';
 export interface Exercise {
+  instructions: any;
+  gif: string | undefined;
   data: any;
   status: string;
   id: string;

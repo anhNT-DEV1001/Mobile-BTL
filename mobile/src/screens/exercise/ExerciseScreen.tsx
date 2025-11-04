@@ -1,22 +1,37 @@
 import React, { useState, useEffect } from "react";
+import { ScrollView, View , Image, LayoutAnimation } from "react-native";
 import {
-  View,
   Text,
+  Button,
+  Chip,
   TextInput,
-  ScrollView,
-  TouchableOpacity,
   ActivityIndicator,
-  StyleSheet,
-  Dimensions,
-} from "react-native";
+  Card,
+  Divider,
+  Modal,
+  Portal,
+  Provider,
+} from "react-native-paper";
 import { Ionicons } from "@expo/vector-icons";
 import { useExercise } from "../exercise/hooks/useExercise";
 import { Exercise } from "../exercise/services/exercise.service";
 
-const { width } = Dimensions.get("window");
+// Định nghĩa type riêng cho filters
+type Filters = {
+  q: string;
+  force: string;
+  level: string;
+  mechanic: string;
+  equipment: string;
+  primaryMuscles: string;
+  category: string;
+  sort: string;
+  page: string;
+  limit: string;
+};
 
 export default function ExerciseScreen() {
-  const [filters, setFilters] = useState({
+  const [filters, setFilters] = useState<Filters>({
     q: "",
     force: "",
     level: "",
@@ -24,7 +39,7 @@ export default function ExerciseScreen() {
     equipment: "",
     primaryMuscles: "",
     category: "",
-    sort: "createdAt:desc",
+    sort: "",
     page: "1",
     limit: "10",
   });
@@ -35,245 +50,448 @@ export default function ExerciseScreen() {
     getExercisesQuery.refetch();
   }, [filters]);
 
-  const exercises = (getExercisesQuery as any)?.data?.data as Exercise[] || [];
+  const exercises =
+    ((getExercisesQuery as any)?.data?.data?.items as Exercise[]) || [];
+
+  // Dùng keyof Filters để an toàn khi index
+  type FilterKey = keyof Filters;
+  const toggleFilter = (field: FilterKey, value: string) => {
+    setFilters((prev) => ({
+      ...prev,
+      [field]: prev[field] === value ? "" : value,
+    }));
+  };
+
+  const nextPage = () => {
+    setFilters((prev) => ({
+      ...prev,
+      page: (parseInt(prev.page) + 1).toString(),
+    }));
+  };
+
+  const prevPage = () => {
+    setFilters((prev) => ({
+      ...prev,
+      page: Math.max(1, parseInt(prev.page) - 1).toString(),
+    }));
+  };
+
+  const goHome = () => {
+    setFilters({
+      q: "",
+      force: "",
+      level: "",
+      mechanic: "",
+      equipment: "",
+      primaryMuscles: "",
+      category: "",
+      sort: "",
+      page: "1",
+      limit: "10",
+    });
+  };
+
+  const chipRowStyle = {
+    flexDirection: "row" as const,
+    flexWrap: "wrap" as const,
+    justifyContent: "center" as const,
+    marginBottom: 12,
+  };
+
+  const sectionTitleStyle = {
+    textAlign: "center" as const,
+    marginBottom: 6,
+    color: "#1E88E5",
+    fontWeight: "bold" as const,
+  };
+
+  const [showFilters, setShowFilters] = useState(false);
+
+  const toggleFilters = () => {
+    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+    setShowFilters(!showFilters);
+  };
+
+
+
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      <Text style={styles.header}> Danh sách Bài Tập</Text>
+    <ScrollView style={{ flex: 1, backgroundColor: "#F1F5F9" }}>
+      <View style={{ padding: 16, paddingBottom: 100 }}>
+        <Text
+          variant="headlineMedium"
+          style={{
+            textAlign: "center",
+            color: "#1E88E5",
+            fontWeight: "bold",
+            marginBottom: 16,
+          }}
+        >
+          Danh sách Bài Tập
+        </Text>
 
-      {/* 🔍 Tìm kiếm */}
-      <View style={styles.searchContainer}>
-        <Ionicons name="search" size={20} color="#2B6CB0" style={{ marginRight: 5 }} />
-        <TextInput
-          placeholder="Tìm kiếm theo tên..."
-          placeholderTextColor="#A0AEC0"
-          value={filters.q}
-          onChangeText={(text) => setFilters({ ...filters, q: text })}
-          style={styles.searchInput}
-        />
-      </View>
+        {/* 🔽 Nút bật/tắt bộ lọc */}
+        <Button
+          mode="contained-tonal"
+          icon={showFilters ? "filter-minus" : "filter"}
+          onPress={toggleFilters}
+          style={{
+            marginBottom: 16,
+            backgroundColor: "#E3F2FD",
+            borderRadius: 10,
+          }}
+          textColor="#0D47A1"
+        >
+          {showFilters ? "Ẩn bộ lọc" : "Hiển thị bộ lọc"}
+        </Button>
 
-      {/* ⚡ Lực tác động (force) */}
-      <Text style={styles.sectionTitle}>Lực tác động (Force)</Text>
-      <View style={styles.filterRow}>
-        {["push", "pull", "static"].map((item) => (
-          <TouchableOpacity
-            key={item}
-            style={[styles.filterButton, filters.force === item && styles.filterButtonActive]}
-            onPress={() =>
-              setFilters({ ...filters, force: filters.force === item ? "" : item })
-            }
+        {/* 🧩 Bộ lọc ẩn/hiện */}
+        {showFilters && (
+          <View
+            style={{
+              backgroundColor: "#FFFFFF",
+              borderRadius: 12,
+              padding: 12,
+              marginBottom: 16,
+              shadowColor: "#000",
+              shadowOpacity: 0.05,
+              shadowRadius: 4,
+            }}
           >
-            <Text
-              style={[styles.filterText, filters.force === item && styles.filterTextActive]}
-            >
-              {item.toUpperCase()}
-            </Text>
-          </TouchableOpacity>
-        ))}
-      </View>
+            {/* 🔍 Search */}
+            <TextInput
+              mode="outlined"
+              label="Tìm kiếm theo tên"
+              value={filters.q}
+              onChangeText={(text) => setFilters({ ...filters, q: text })}
+              left={<TextInput.Icon icon="magnify" />}
+              style={{ marginBottom: 16, backgroundColor: "#fff" }}
+              outlineColor="#BBDEFB"
+              activeOutlineColor="#1E88E5"
+            />
 
-      {/* 💪 Cấp độ (level) */}
-      <Text style={styles.sectionTitle}>Cấp độ (Level)</Text>
-      <View style={styles.filterRow}>
-        {["beginner", "intermediate", "advanced"].map((item) => (
-          <TouchableOpacity
-            key={item}
-            style={[styles.filterButton, filters.level === item && styles.filterButtonActive]}
-            onPress={() =>
-              setFilters({ ...filters, level: filters.level === item ? "" : item })
-            }
+            {/* ⚡ Force */}
+            <Text variant="titleMedium" style={sectionTitleStyle}>
+              Lực tác động (Force)
+            </Text>
+            <View style={chipRowStyle}>
+              {["push", "pull", "static"].map((item) => (
+                <Chip
+                  key={item}
+                  selected={filters.force === item}
+                  onPress={() => toggleFilter("force", item)}
+                  showSelectedCheck={false}
+                  style={{
+                    margin: 4,
+                    backgroundColor:
+                      filters.force === item ? "#64B5F6" : "#E3F2FD",
+                  }}
+                  textStyle={{
+                    color: filters.force === item ? "#fff" : "#0D47A1",
+                    fontWeight: "600",
+                  }}
+                >
+                  {item.toUpperCase()}
+                </Chip>
+              ))}
+            </View>
+
+            {/* 💪 Level */}
+            <Text variant="titleMedium" style={sectionTitleStyle}>
+              Cấp độ (Level)
+            </Text>
+            <View style={chipRowStyle}>
+              {["beginner", "intermediate", "advanced"].map((item) => (
+                <Chip
+                  key={item}
+                  selected={filters.level === item}
+                  onPress={() => toggleFilter("level", item)}
+                  showSelectedCheck={false}
+                  style={{
+                    margin: 4,
+                    backgroundColor:
+                      filters.level === item ? "#64B5F6" : "#E3F2FD",
+                  }}
+                  textStyle={{
+                    color: filters.level === item ? "#fff" : "#0D47A1",
+                    fontWeight: "600",
+                  }}
+                >
+                  {item.toUpperCase()}
+                </Chip>
+              ))}
+            </View>
+
+            {/* ⚙️ Mechanic */}
+            <Text variant="titleMedium" style={sectionTitleStyle}>
+              Cơ chế (Mechanic)
+            </Text>
+            <View style={chipRowStyle}>
+              {["compound", "isolation"].map((item) => (
+                <Chip
+                  key={item}
+                  selected={filters.mechanic === item}
+                  onPress={() => toggleFilter("mechanic", item)}
+                  showSelectedCheck={false}
+                  style={{
+                    margin: 4,
+                    backgroundColor:
+                      filters.mechanic === item ? "#64B5F6" : "#E3F2FD",
+                  }}
+                  textStyle={{
+                    color: filters.mechanic === item ? "#fff" : "#0D47A1",
+                    fontWeight: "600",
+                  }}
+                >
+                  {item}
+                </Chip>
+              ))}
+            </View>
+
+            {/* 🏋️ Equipment */}
+            <Text variant="titleMedium" style={sectionTitleStyle}>
+              Dụng cụ (Equipment)
+            </Text>
+            <View style={chipRowStyle}>
+              {["barbell", "dumbbell", "machine", "body only"].map((item) => (
+                <Chip
+                  key={item}
+                  selected={filters.equipment === item}
+                  onPress={() => toggleFilter("equipment", item)}
+                  showSelectedCheck={false}
+                  style={{
+                    margin: 4,
+                    backgroundColor:
+                      filters.equipment === item ? "#64B5F6" : "#E3F2FD",
+                  }}
+                  textStyle={{
+                    color: filters.equipment === item ? "#fff" : "#0D47A1",
+                    fontWeight: "600",
+                  }}
+                >
+                  {item}
+                </Chip>
+              ))}
+            </View>
+
+            {/* 💪 Primary Muscles */}
+            <Text variant="titleMedium" style={sectionTitleStyle}>
+              Cơ chính (Primary Muscles)
+            </Text>
+            <View style={chipRowStyle}>
+              {["chest", "legs", "arms", "back", "shoulders"].map((item) => (
+                <Chip
+                  key={item}
+                  selected={filters.primaryMuscles === item}
+                  onPress={() => toggleFilter("primaryMuscles", item)}
+                  showSelectedCheck={false}
+                  style={{
+                    margin: 4,
+                    backgroundColor:
+                      filters.primaryMuscles === item ? "#64B5F6" : "#E3F2FD",
+                  }}
+                  textStyle={{
+                    color: filters.primaryMuscles === item ? "#fff" : "#0D47A1",
+                    fontWeight: "600",
+                  }}
+                >
+                  {item}
+                </Chip>
+              ))}
+            </View>
+
+            {/* 🧩 Category */}
+            <Text variant="titleMedium" style={sectionTitleStyle}>
+              Danh mục (Category)
+            </Text>
+            <View style={chipRowStyle}>
+              {["strength", "cardio", "powerlifting", "stretching"].map((item) => (
+                <Chip
+                  key={item}
+                  selected={filters.category === item}
+                  onPress={() => toggleFilter("category", item)}
+                  showSelectedCheck={false}
+                  style={{
+                    margin: 4,
+                    backgroundColor:
+                      filters.category === item ? "#64B5F6" : "#E3F2FD",
+                  }}
+                  textStyle={{
+                    color: filters.category === item ? "#fff" : "#0D47A1",
+                    fontWeight: "600",
+                  }}
+                >
+                  {item}
+                </Chip>
+              ))}
+            </View>
+
+            {/* 🕒 Sort */}
+            <Text variant="titleMedium" style={sectionTitleStyle}>
+              Sắp xếp (Sort)
+            </Text>
+            <View style={chipRowStyle}>
+              {[
+                { label: "Tên (A–Z)", value: "name:asc" },
+                { label: "Tên (Z–A)", value: "name:desc" },
+              ].map(({ label, value }) => (
+                <Chip
+                  key={value}
+                  selected={filters.sort === value}
+                  onPress={() => toggleFilter("sort", value)}
+                  showSelectedCheck={false}
+                  style={{
+                    margin: 4,
+                    backgroundColor: filters.sort === value ? "#64B5F6" : "#E3F2FD",
+                  }}
+                  textStyle={{
+                    color: filters.sort === value ? "#fff" : "#0D47A1",
+                    fontWeight: "600",
+                  }}
+                >
+                  {label}
+                </Chip>
+              ))}
+            </View>
+
+          </View>
+        )}
+
+        {/* 🔄 Refresh */}
+        <Button
+          mode="contained"
+          icon="refresh"
+          onPress={() => getExercisesQuery.refetch()}
+          style={{
+            borderRadius: 10,
+            marginBottom: 16,
+            backgroundColor: "#42A5F5",
+          }}
+        >
+          Làm mới danh sách
+        </Button>
+
+        {/* 🔙 Navigation Buttons */}
+        <View
+          style={{
+            flexDirection: "row",
+            justifyContent: "center",
+            alignItems: "center",
+            marginBottom: 20,
+          }}
+        >
+          <Button
+            mode="outlined"
+            onPress={prevPage}
+            icon="chevron-left"
+            style={{
+              borderColor: "#1E88E5",
+              marginHorizontal: 6,
+            }}
+            textColor="#1E88E5"
+            disabled={parseInt(filters.page) <= 1}
           >
-            <Text
-              style={[styles.filterText, filters.level === item && styles.filterTextActive]}
-            >
-              {item.toUpperCase()}
-            </Text>
-          </TouchableOpacity>
-        ))}
+            Trước
+          </Button>
+
+          <Button
+            mode="contained"
+            icon="home"
+            onPress={goHome}
+            style={{
+              borderRadius: 10,
+              marginHorizontal: 6,
+              backgroundColor: "#64B5F6",
+            }}
+          >
+            Trang chủ
+          </Button>
+
+          <Button
+            mode="outlined"
+            onPress={nextPage}
+            icon="chevron-right"
+            contentStyle={{ flexDirection: "row-reverse" }}
+            style={{
+              borderColor: "#1E88E5",
+              marginHorizontal: 6,
+            }}
+            textColor="#1E88E5"
+          >
+            Tiếp
+          </Button>
+        </View>
+
+        {/* 📋 Exercise List */}
+        {getExercisesQuery.isLoading ? (
+          <View style={{ alignItems: "center", marginTop: 20 }}>
+            <ActivityIndicator animating={true} color="#1E88E5" />
+            <Text style={{ marginTop: 8 }}>Đang tải bài tập...</Text>
+          </View>
+        ) : (
+          <View>
+            {exercises.length === 0 ? (
+              <Text style={{ textAlign: "center", color: "#777", fontSize: 16 }}>
+                Không có bài tập nào phù hợp.
+              </Text>
+            ) : (
+              exercises.map((item: Exercise, idx: number) => (
+                <Card
+                  key={idx}
+                  style={{
+                    marginBottom: 12,
+                    backgroundColor: "#FFFFFF",
+                    borderRadius: 12,
+                  }}
+                >
+                  <Card.Title
+                    title={item.name}
+                    titleVariant="titleLarge"
+                    subtitle={`Cấp độ: ${item.level || "?"}`}
+                    left={(props) => (
+                      <Ionicons
+                        {...props}
+                        name="barbell-outline"
+                        size={26}
+                        color="#1E88E5"
+                      />
+                    )}
+                  />
+                  <Card.Content>
+                    {item.force && <Text>Lực: {item.force}</Text>}
+                    {item.category && <Text>Danh mục: {item.category}</Text>}
+                    <Divider style={{ marginVertical: 6 }} />
+                    <Text style={{ fontSize: 12, color: "#666" }}>
+                      Cập nhật:{" "}
+                      {item.updatedAt
+                        ? new Date(item.updatedAt).toLocaleDateString()
+                        : "Không rõ"}
+                    </Text>
+                  </Card.Content>
+                </Card>
+              ))
+            )}
+          </View>
+        )}
+
+        {/* 🏠 Back to Home Button */}
+        <Button
+          mode="contained"
+          icon="home"
+          onPress={goHome}
+          style={{
+            borderRadius: 12,
+            marginTop: 20,
+            backgroundColor: "#64B5F6",
+            alignSelf: "center",
+            width: "60%",
+          }}
+        >
+          Quay lại Trang Chủ
+        </Button>
       </View>
-
-      {/* ⚙️ Mechanic */}
-      <Text style={styles.sectionTitle}>Cơ chế (Mechanic)</Text>
-      <TextInput
-        placeholder="Ví dụ: compound, isolation..."
-        placeholderTextColor="#A0AEC0"
-        value={filters.mechanic}
-        onChangeText={(text) => setFilters({ ...filters, mechanic: text })}
-        style={styles.input}
-      />
-
-      {/* 🏋️ Equipment */}
-      <Text style={styles.sectionTitle}>Dụng cụ (Equipment)</Text>
-      <TextInput
-        placeholder="Ví dụ: barbell, dumbbell..."
-        placeholderTextColor="#A0AEC0"
-        value={filters.equipment}
-        onChangeText={(text) => setFilters({ ...filters, equipment: text })}
-        style={styles.input}
-      />
-
-      {/* 💪 Cơ chính (Primary Muscles) */}
-      <Text style={styles.sectionTitle}>Cơ chính (Primary Muscles)</Text>
-      <TextInput
-        placeholder="Ví dụ: chest, legs..."
-        placeholderTextColor="#A0AEC0"
-        value={filters.primaryMuscles}
-        onChangeText={(text) => setFilters({ ...filters, primaryMuscles: text })}
-        style={styles.input}
-      />
-
-      {/* 🧩 Danh mục (Category) */}
-      <Text style={styles.sectionTitle}>Danh mục (Category)</Text>
-      <TextInput
-        placeholder="Ví dụ: strength, cardio..."
-        placeholderTextColor="#A0AEC0"
-        value={filters.category}
-        onChangeText={(text) => setFilters({ ...filters, category: text })}
-        style={styles.input}
-      />
-
-      {/* 🕒 Sắp xếp (Sort) */}
-      <Text style={styles.sectionTitle}>Sắp xếp (Sort)</Text>
-      <TextInput
-        placeholder="Ví dụ: createdAt:desc, name:asc"
-        placeholderTextColor="#A0AEC0"
-        value={filters.sort}
-        onChangeText={(text) => setFilters({ ...filters, sort: text })}
-        style={styles.input}
-      />
-
-      {/* 📄 Phân trang */}
-      <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
-        <View style={{ flex: 1, marginRight: 5 }}>
-          <Text style={styles.sectionTitle}>Trang (Page)</Text>
-          <TextInput
-            placeholder="1"
-            keyboardType="numeric"
-            value={filters.page}
-            onChangeText={(text) => setFilters({ ...filters, page: text })}
-            style={styles.input}
-          />
-        </View>
-        <View style={{ flex: 1, marginLeft: 5 }}>
-          <Text style={styles.sectionTitle}>Giới hạn (Limit)</Text>
-          <TextInput
-            placeholder="10"
-            keyboardType="numeric"
-            value={filters.limit}
-            onChangeText={(text) => setFilters({ ...filters, limit: text })}
-            style={styles.input}
-          />
-        </View>
-      </View>
-
-      {/* 🔄 Làm mới */}
-      <TouchableOpacity onPress={() => getExercisesQuery.refetch()} style={styles.refreshButton}>
-        <Ionicons name="refresh" size={18} color="#fff" />
-        <Text style={styles.refreshText}>Làm mới danh sách</Text>
-      </TouchableOpacity>
-
-      {/* 📋 Hiển thị danh sách */}
-      {getExercisesQuery.isLoading ? (
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#2B6CB0" />
-          <Text style={{ color: "#2B6CB0", marginTop: 5 }}>Đang tải bài tập...</Text>
-        </View>
-      ) : (
-        <View style={styles.exerciseList}>
-          {exercises.length === 0 ? (
-            <Text style={styles.emptyText}>Không có bài tập nào phù hợp.</Text>
-          ) : (
-            exercises.map((item: Exercise, idx: number) => (
-              <View key={idx} style={styles.card}>
-                <Text style={styles.exerciseName}>{item.name}</Text>
-                {item.level && <Text style={styles.exerciseInfo}>Cấp độ: {item.level}</Text>}
-                {item.force && <Text style={styles.exerciseInfo}>Lực: {item.force}</Text>}
-                {item.category && (
-                  <Text style={styles.exerciseInfo}>Danh mục: {item.category}</Text>
-                )}
-                <Text style={styles.dateText}>
-                  Cập nhật:{" "}
-                  {item.updatedAt
-                    ? new Date(item.updatedAt).toLocaleDateString()
-                    : "Không rõ"}
-                </Text>
-              </View>
-            ))
-          )}
-        </View>
-      )}
     </ScrollView>
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#F7FAFC" },
-  content: { padding: 16, paddingBottom: 100 },
-  header: { fontSize: 22, fontWeight: "700", color: "#2B6CB0", textAlign: "center", marginBottom: 16 },
-  searchContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#fff",
-    borderColor: "#BEE3F8",
-    borderWidth: 1,
-    borderRadius: 12,
-    paddingHorizontal: 10,
-    marginBottom: 15,
-  },
-  searchInput: { flex: 1, height: 40, color: "#2D3748" },
-  sectionTitle: { color: "#2B6CB0", fontWeight: "600", fontSize: 16, marginVertical: 6 },
-  filterRow: { flexDirection: "row", justifyContent: "space-between", marginBottom: 10 },
-  filterButton: {
-    flex: 1,
-    marginHorizontal: 4,
-    borderRadius: 10,
-    backgroundColor: "#E3F2FD",
-    paddingVertical: 8,
-    alignItems: "center",
-    borderWidth: 1,
-    borderColor: "#90CAF9",
-  },
-  filterButtonActive: { backgroundColor: "#2B6CB0", borderColor: "#2B6CB0" },
-  filterText: { color: "#2B6CB0", fontWeight: "600" },
-  filterTextActive: { color: "#fff" },
-  input: {
-    backgroundColor: "#fff",
-    borderColor: "#BEE3F8",
-    borderWidth: 1,
-    borderRadius: 10,
-    paddingHorizontal: 10,
-    paddingVertical: 8,
-    color: "#2D3748",
-    marginBottom: 12,
-  },
-  refreshButton: {
-    backgroundColor: "#2B6CB0",
-    borderRadius: 12,
-    paddingVertical: 10,
-    flexDirection: "row",
-    justifyContent: "center",
-    alignItems: "center",
-    marginBottom: 20,
-  },
-  refreshText: { color: "#fff", fontWeight: "600", marginLeft: 8 },
-  loadingContainer: { alignItems: "center", marginTop: 20 },
-  exerciseList: { marginTop: 10 },
-  card: {
-    backgroundColor: "#fff",
-    borderRadius: 12,
-    padding: 15,
-    marginBottom: 10,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 3,
-    elevation: 2,
-    borderLeftWidth: 5,
-    borderLeftColor: "#63B3ED",
-  },
-  exerciseName: { fontSize: 18, fontWeight: "700", color: "#2D3748" },
-  exerciseInfo: { color: "#4A5568", marginTop: 4 },
-  dateText: { color: "#718096", fontSize: 12, marginTop: 6 },
-  emptyText: { textAlign: "center", color: "#718096", fontSize: 16, marginTop: 20 },
-});
+

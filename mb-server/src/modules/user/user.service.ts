@@ -8,6 +8,7 @@ import * as bcrypt from 'bcrypt';
 import { UserResponse } from './dto/res/user.response';
 import { ApiError } from 'src/common/api';
 import { Token, TokenDocument } from '../auth/schema/token.schema';
+import { caculateBmi } from 'src/common/utils';
 
 @Injectable()
 export class UserService {
@@ -96,4 +97,23 @@ export class UserService {
     // async userBmi(user : (UserResponse) {
     //     const bmi = this.userBmi
     // }
+    async userBmi(user : UserResponse) {
+        let message = '';
+        const BMI = caculateBmi(user.profile?.height as number, user.profile?.weight as number);
+        if (BMI < 18.5) {
+            message = 'Thiếu cân';
+        } else if (BMI >= 18.5 && BMI < 22.9){
+            message = 'Bình thường';
+        } else if (BMI >= 23 && BMI < 24.9) {
+            message = 'Thừa cân';
+        } else if (BMI >= 25 && BMI < 29.9) {
+            message = 'Béo phì độ I';
+        } else {
+            message = 'Béo phì độ II';
+        }
+        return {
+            bmi: BMI,
+            message: message
+        };
+    }
 }

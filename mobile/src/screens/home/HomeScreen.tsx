@@ -86,7 +86,7 @@ export default function HomeScreen() {
                     <Text style={styles.menuText}>Exercises</Text>
                     </TouchableOpacity>
 
-                <TouchableOpacity style={styles.menuItem}>
+                <TouchableOpacity style={styles.menuItem} onPress={() => router.push('/(app)/measurement/Measurement')}>
                     <MaterialCommunityIcons name="tape-measure" size={24} color="black" />
                     <Text style={styles.menuText}>Measurements</Text>
                 </TouchableOpacity>

@@ -6,6 +6,7 @@ import { BaseResponse } from 'src/common/api';
 import { ApiBearerAuth, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { Roles } from 'src/common/decorators/role.decorator';
 import { BearerType, UserRole } from 'src/common/enums';
+import { CurrentUser } from 'src/common/decorators/user-current.decorator';
 
 @ApiTags('Users')
 @ApiBearerAuth(BearerType.AccessToken)
@@ -70,6 +71,19 @@ export class UserController {
         return {
             status: 'success',
             message: 'Xóa người dùng thành công !',
+            data: response
+        }
+    }
+    @Get('bmi')
+    @ApiResponse({
+        status: 200,
+        type: UserResponse
+    })
+    async getBMIController(@CurrentUser() user): Promise<BaseResponse<any>> {
+        const response = await this.userService.userBmi(user);
+        return {
+            status: 'success',
+            message: 'Lấy BMI thành công!',
             data: response
         }
     }

@@ -35,7 +35,7 @@ export default function ExerciseScreen() {
     getExercisesQuery.refetch();
   }, [filters]);
 
-  const exercises = (getExercisesQuery as any)?.data?.data?.items || [];
+  const exercises = (getExercisesQuery as any)?.data?.data as Exercise[] || [];
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>

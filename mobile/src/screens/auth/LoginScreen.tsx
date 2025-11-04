@@ -29,7 +29,7 @@ export default function LoginScreen() {
                 {/* Header Section */}
                 <View style={styles.header}>
                     <MaterialCommunityIcons name="dumbbell" size={60} color="#0096F3" />
-                    <Text style={styles.appName}>VAI LON</Text>
+                    <Text style={styles.appName}>My strength level</Text>
                     <Text style={styles.headerSubtitle}>Bắt đầu hành trình của bạn</Text>
                 </View>
 

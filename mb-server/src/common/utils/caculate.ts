@@ -45,6 +45,43 @@ export function caculateBmi(height : number , weight: number) {
     return Math.round(bmi * 10) / 10;
 }
 
+export enum LifestyleMultiplier {
+    SEDENTARY = 1.2,
+    LIGHTLY_ACTIVE = 1.375,
+    MODERATELY_ACTIVE = 1.55,
+    VERY_ACTIVE = 1.725,
+    EXTRA_ACTIVE = 1.9
+}
+
+export function caculateBmrAndTdee(height: number, weight: number, dob: Date, gender: UserGender) {
+    const age = caculateAge(dob);
+
+    let bmr: number;
+
+    // Tính BMR theo công thức Mifflin-St Jeor
+    if (gender === UserGender.MALE) {
+        bmr = (9.99 * weight) + (6.25 * height) - (4.92 * Number(age)) + 5;
+    } else { // UserGender.FEMALE
+        bmr = (9.99 * weight) + (6.25 * height) - (4.92 * Number(age)) - 161;
+    }
+
+    const roundedBmr = Math.round(bmr);
+
+    // Tính toán TDEE cho các mức lối sống
+    const energyNeeds = {
+        sedentary: Math.round(roundedBmr * LifestyleMultiplier.SEDENTARY),
+        lightlyActive: Math.round(roundedBmr * LifestyleMultiplier.LIGHTLY_ACTIVE),
+        moderatelyActive: Math.round(roundedBmr * LifestyleMultiplier.MODERATELY_ACTIVE),
+        veryActive: Math.round(roundedBmr * LifestyleMultiplier.VERY_ACTIVE),
+        extraActive: Math.round(roundedBmr * LifestyleMultiplier.EXTRA_ACTIVE)
+    };
+
+    return {
+        bmr: roundedBmr,
+        energyNeeds: energyNeeds
+    };
+}
+
 // export function caculateWorkoutLevel(data : any) {
     
 // }

@@ -87,4 +87,17 @@ export class UserController {
             data: response
         }
     }
+    @Get('energy-needs')
+    @ApiResponse({
+        status: 200,
+        description: 'Trả về BMR và nhu cầu năng lượng hàng ngày (TDEE)'
+    })
+    async getEnergyNeedsController(@CurrentUser() user): Promise<BaseResponse<any>> {
+        const response = await this.userService.userEnergyNeeds(user);
+        return {
+            status: 'success',
+            message: 'Lấy nhu cầu năng lượng thành công!',
+            data: response
+        };
+    }
 }

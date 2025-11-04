@@ -1,16 +1,17 @@
-import { View, StyleSheet, ScrollView, TouchableOpacity } from "react-native";
-import { Button, Text, Avatar, Surface, ActivityIndicator } from "react-native-paper";
+import { View, StyleSheet, ScrollView } from "react-native";
+import { Button, Text, Avatar, Surface, Card, Chip, IconButton } from "react-native-paper";
 import { useAuth } from "../auth/hooks/useAuth";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useHome } from "./hooks/useHome";
 import { useAuthStore } from "@/src/common/stores";
 import { useNavigation } from "@react-navigation/native";
-import { router } from "expo-router";
 
 export default function HomeScreen() {
     const currentUser = useAuthStore((state) => state.user);
-    const { workoutsQuery , userWorkoutLevel } = useHome();
-    const {logout , logoutMutation} = useAuth();
+    const { workoutsQuery, userWorkoutLevel, isLoading, isLoadingLevel } = useHome();
+    const { logout } = useAuth();
+    const navigation = useNavigation();
+
     const handleLogout = async () => {
         try {
             await logout();
@@ -18,98 +19,148 @@ export default function HomeScreen() {
         } catch (error) {
             console.log("Lỗi đăng xuất: ", error);
         }
-    }
-    const navigation = useNavigation();
+    };
+
+    // Convert workout level to stars (1-4)
+    const getStarCount = (level: string | undefined): number => {
+        if (!level) return 0;
+        const levelMap: { [key: string]: number } = {
+            'beginner': 1,
+            'intermediate': 2,
+            'advanced': 3,
+            'gym lord': 4,
+        };
+        return levelMap[level.toLowerCase()] || 0;
+    };
+
+    const getLevelLabel = (level: string | undefined): string => {
+        if (!level) return 'Unknown';
+        const labelMap: { [key: string]: string } = {
+            'beginner': 'Beginner',
+            'intermediate': 'Intermediate',
+            'advanced': 'Advanced',
+            'gym lord': 'Gym Lord',
+        };
+        return labelMap[level.toLowerCase()] || 'Unknown';
+    };
+
+    const starCount = getStarCount(userWorkoutLevel.data?.data);
+    const levelLabel = getLevelLabel(userWorkoutLevel.data?.data);
+
     return (
         <ScrollView style={styles.scrollView}>
+            {/* Header */}
             <Surface style={styles.header} elevation={2}>
-                <Text style={styles.headerTitle}>My strength level</Text>
-                <TouchableOpacity onPress={handleLogout}>
+                <Text variant="headlineSmall" style={styles.headerTitle}>
+                    My strength level
+                </Text>
+                <IconButton
+                    icon={() => (
+                        <Avatar.Image 
+                            size={40} 
+                            source={require('../../../assets/images/icon.png')}
+                        />
+                    )}
+                    onPress={handleLogout}
+                />
+            </Surface>
+
+            {/* Profile Section */}
+            <Card style={styles.profileCard} elevation={1}>
+                <Card.Content style={styles.profileContent}>
                     <Avatar.Image 
-                        size={50} 
+                        size={100}
                         source={require('../../../assets/images/icon.png')}
                     />
-                </TouchableOpacity>
-            </Surface>
-
-            <View style={styles.profileSection}>
-                <Avatar.Image 
-                    size={100}
-                    source={require('../../../assets/images/icon.png')}
-                    style={styles.profileAvatar}
-                />
-                <Text style={styles.username}>{currentUser?.profile?.name || "Unknown User"}</Text>
-                {/* <Text style={styles.userId}>{currentUser?.profile?.id || "ID Not Available"}</Text> */}
-                <Button mode="outlined" style={styles.genderButton}>
-                    Male
-                </Button>
-            </View>
-
-            <View style={styles.statsContainer}>
-                <View style={styles.statItem}>
-                    <Text style={styles.statNumber}>
-                        {workoutsQuery.data?.data?.length || 0}
+                    <Text variant="headlineMedium" style={styles.username}>
+                        {currentUser?.profile?.name || "Unknown User"}
                     </Text>
-                    <Text style={styles.statLabel}>WORKOUTS</Text>
-                </View>
-                {/* <View style={styles.statItem}>
-                    <Text style={styles.statNumber}>0</Text>
-                    <Text style={styles.statLabel}>FOLLOWERS</Text>
-                </View>
-                <View style={styles.statItem}>
-                    <Text style={styles.statNumber}>0</Text>
-                    <Text style={styles.statLabel}>FOLLOWING</Text>
-                </View> */}
-            </View>
-
-            <Surface style={styles.powerSection} elevation={1}>
-                <Text style={styles.powerTitle}>Power Level</Text>
-                <Button mode="contained" style={styles.unknownButton}>
-                    {userWorkoutLevel.data?.data || ""}
-                </Button>
-            </Surface>
-
-            <View style={styles.menuGrid}>
-                <TouchableOpacity style={styles.menuItem}>
-                    <MaterialCommunityIcons name="dumbbell" size={24} color="black" />
-                    <Text style={styles.menuText}>Workouts</Text>
-                </TouchableOpacity>
-                {/* <TouchableOpacity style={styles.menuItem}>
-                    <MaterialCommunityIcons name="clipboard-list" size={24} color="black" />
-                    <Text style={styles.menuText}>Exercises</Text>
-                </TouchableOpacity> */}
-                <TouchableOpacity
-                    style={styles.menuItem}
-                    onPress={() => navigation.navigate("exercise" as never)}
+                    <Chip 
+                        mode="outlined" 
+                        icon="human-male"
+                        style={styles.genderChip}
                     >
-                    <MaterialCommunityIcons name="clipboard-list" size={24} color="black" />
-                    <Text style={styles.menuText}>Exercises</Text>
-                    </TouchableOpacity>
+                        Male
+                    </Chip>
+                </Card.Content>
+            </Card>
 
-                <TouchableOpacity style={styles.menuItem}>
-                    <MaterialCommunityIcons name="tape-measure" size={24} color="black" />
-                    <Text style={styles.menuText}>Measurements</Text>
-                </TouchableOpacity>
-                {/* <TouchableOpacity style={styles.menuItem}>
-                    <MaterialCommunityIcons name="import" size={24} color="black" />
-                    <Text style={styles.menuText}>Import</Text>
-                </TouchableOpacity> */}
-            </View>
+            {/* Stats & Power Level Card */}
+            <Card style={styles.statsCard} elevation={1}>
+                <Card.Content style={styles.statsContent}>
+                    <View style={styles.statsRow}>
+                        {/* Workouts Count */}
+                        <View style={styles.statItem}>
+                            <MaterialCommunityIcons name="dumbbell" size={28} color="#003366" />
+                            <Text variant="displaySmall" style={styles.statNumber}>
+                                {isLoading ? '...' : workoutsQuery.data?.data?.length || 0}
+                            </Text>
+                            <Text variant="labelLarge" style={styles.statLabel}>
+                                WORKOUTS
+                            </Text>
+                        </View>
 
-            {/* <Surface style={styles.discordSection} elevation={1}>
-                <MaterialCommunityIcons name="message-outline" size={40} color="white" />
-                <Text style={styles.discordTitle}>Join our Discord Server</Text>
-                <Text style={styles.discordDescription}>
-                    Get feedback on your goals, routines and progress photos by connecting with our community. Introduce yourself today!
-                </Text>
-                <Button 
-                    mode="outlined" 
-                    style={styles.discordButton}
-                    textColor="white"
+                        {/* Divider */}
+                        <View style={styles.divider} />
+
+                        {/* Power Level with Stars */}
+                        <View style={styles.statItem}>
+                            <MaterialCommunityIcons name="trophy" size={28} color="#FFD700" />
+                            <View style={styles.starsContainer}>
+                                {isLoadingLevel ? (
+                                    <Text variant="bodyLarge">...</Text>
+                                ) : (
+                                    [...Array(4)].map((_, index) => (
+                                        <MaterialCommunityIcons
+                                            key={index}
+                                            name={index < starCount ? "star" : "star-outline"}
+                                            size={24}
+                                            color={index < starCount ? "#FFD700" : "#CCCCCC"}
+                                        />
+                                    ))
+                                )}
+                            </View>
+                            <Text variant="labelLarge" style={styles.statLabel}>
+                                {levelLabel.toUpperCase()}
+                            </Text>
+                        </View>
+                    </View>
+                </Card.Content>
+            </Card>
+
+            {/* Menu Grid */}
+            <View style={styles.menuContainer}>
+                <Card style={styles.menuCard} elevation={1}>
+                    <Card.Content style={styles.menuItem}>
+                        <MaterialCommunityIcons name="dumbbell" size={32} color="#003366" />
+                        <Text variant="titleMedium" style={styles.menuText}>
+                            Workouts
+                        </Text>
+                    </Card.Content>
+                </Card>
+
+                <Card 
+                    style={styles.menuCard} 
+                    elevation={1}
+                    onPress={() => navigation.navigate("exercise" as never)}
                 >
-                    Join us on Discord
-                </Button>
-            </Surface> */}
+                    <Card.Content style={styles.menuItem}>
+                        <MaterialCommunityIcons name="clipboard-list" size={32} color="#003366" />
+                        <Text variant="titleMedium" style={styles.menuText}>
+                            Exercises
+                        </Text>
+                    </Card.Content>
+                </Card>
+
+                <Card style={styles.menuCard} elevation={1}>
+                    <Card.Content style={styles.menuItem}>
+                        <MaterialCommunityIcons name="tape-measure" size={32} color="#003366" />
+                        <Text variant="titleMedium" style={styles.menuText}>
+                            Measurements
+                        </Text>
+                    </Card.Content>
+                </Card>
+            </View>
         </ScrollView>
     );
 }
@@ -123,322 +174,89 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
-        padding: 16,
+        paddingHorizontal: 16,
+        paddingVertical: 12,
         backgroundColor: '#003366',
     },
     headerTitle: {
         color: 'white',
-        fontSize: 20,
         fontWeight: 'bold',
     },
-    profileSection: {
-        alignItems: 'center',
-        padding: 20,
+    profileCard: {
+        margin: 16,
+        marginBottom: 12,
+        backgroundColor: 'white',
     },
-    profileAvatar: {
-        marginBottom: 10,
+    profileContent: {
+        alignItems: 'center',
+        paddingVertical: 20,
     },
     username: {
-        fontSize: 24,
         fontWeight: 'bold',
-        marginBottom: 5,
+        marginTop: 16,
+        marginBottom: 12,
     },
-    userId: {
-        fontSize: 16,
-        color: '#666',
-        marginBottom: 10,
+    genderChip: {
+        marginTop: 8,
     },
-    bodyInfoContainer: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        marginBottom: 10,
+    statsCard: {
+        marginHorizontal: 16,
+        marginBottom: 12,
+        backgroundColor: 'white',
     },
-    bodyInfo: {
-        fontSize: 16,
-        color: '#666',
+    statsContent: {
+        paddingVertical: 20,
     },
-    bodyInfoSeparator: {
-        fontSize: 16,
-        color: '#666',
-        marginHorizontal: 8,
-    },
-    genderButton: {
-        borderRadius: 20,
-    },
-    genderButtonLabel: {
-        textTransform: 'capitalize',
-    },
-    statsContainer: {
+    statsRow: {
         flexDirection: 'row',
         justifyContent: 'space-around',
-        padding: 20,
-        backgroundColor: 'white',
-        marginHorizontal: 10,
-        borderRadius: 10,
-    },
-    statItem: {
         alignItems: 'center',
     },
+    statItem: {
+        flex: 1,
+        alignItems: 'center',
+        gap: 8,
+    },
     statNumber: {
-        fontSize: 24,
         fontWeight: 'bold',
+        color: '#003366',
     },
     statLabel: {
         color: '#666',
-        fontSize: 12,
+        marginTop: 4,
+        letterSpacing: 1,
+        fontSize: 11,
     },
-    powerSection: {
-        margin: 10,
-        padding: 15,
-        borderRadius: 10,
+    divider: {
+        width: 1,
+        height: 80,
+        backgroundColor: '#E0E0E0',
+        marginHorizontal: 12,
     },
-    powerTitle: {
-        fontSize: 18,
-        fontWeight: 'bold',
-        marginBottom: 10,
+    starsContainer: {
+        flexDirection: 'row',
+        gap: 4,
+        marginVertical: 4,
     },
-    unknownButton: {
-        backgroundColor: '#0099ff',
-    },
-    menuGrid: {
+    menuContainer: {
         flexDirection: 'row',
         flexWrap: 'wrap',
-        padding: 10,
+        paddingHorizontal: 16,
+        paddingBottom: 16,
         justifyContent: 'space-between',
     },
-    menuItem: {
+    menuCard: {
         width: '48%',
+        marginBottom: 12,
         backgroundColor: 'white',
-        padding: 20,
-        marginBottom: 10,
-        borderRadius: 10,
+    },
+    menuItem: {
         alignItems: 'center',
+        paddingVertical: 20,
     },
     menuText: {
-        marginTop: 10,
-        fontSize: 16,
-    },
-    discordSection: {
-        margin: 10,
-        padding: 20,
-        borderRadius: 10,
-        backgroundColor: '#7289DA',
-        alignItems: 'center',
-    },
-    discordTitle: {
-        color: 'white',
-        fontSize: 20,
-        fontWeight: 'bold',
-        marginVertical: 10,
-    },
-    discordDescription: {
-        color: 'white',
-        textAlign: 'center',
-        marginBottom: 15,
-    },
-    discordButton: {
-        borderColor: 'white',
-        width: '100%',
+        marginTop: 12,
+        color: '#003366',
+        fontWeight: '600',
     },
 });
-
-// import { View, StyleSheet, ScrollView, TouchableOpacity } from "react-native";
-// import { Button, Text, Avatar, Surface } from "react-native-paper";
-// import { useAuth } from "../auth/hooks/useAuth";
-// import { MaterialCommunityIcons } from "@expo/vector-icons";
-// import { useHome } from "./hooks/useHome";
-// import { useAuthStore } from "@/src/common/stores";
-// import { router } from "expo-router"; // ✅ Dùng router từ expo-router
-
-// export default function HomeScreen() {
-//   const currentUser = useAuthStore((state) => state.user);
-//   const { workoutsQuery } = useHome();
-//   const { logout } = useAuth();
-
-//   const handleLogout = async () => {
-//     try {
-//       await logout();
-//       console.log("Logout successfully");
-//     } catch (error) {
-//       console.log("Lỗi đăng xuất: ", error);
-//     }
-//   };
-
-//   return (
-//     <ScrollView style={styles.scrollView}>
-//       <Surface style={styles.header} elevation={2}>
-//         <Text style={styles.headerTitle}>Dashboard</Text>
-//         <TouchableOpacity onPress={handleLogout}>
-//           <Avatar.Image
-//             size={50}
-//             source={require("../../../assets/images/icon.png")}
-//           />
-//         </TouchableOpacity>
-//       </Surface>
-
-//       <View style={styles.profileSection}>
-//         <Avatar.Image
-//           size={100}
-//           source={require("../../../assets/images/icon.png")}
-//           style={styles.profileAvatar}
-//         />
-//         <Text style={styles.username}>
-//           {currentUser?.profile?.name || "Unknown User"}
-//         </Text>
-//         <Text style={styles.userId}>
-//           {currentUser?.profile?.id || "ID Not Available"}
-//         </Text>
-//         <Button mode="outlined" style={styles.genderButton}>
-//           Male
-//         </Button>
-//       </View>
-
-//       <View style={styles.statsContainer}>
-//         <View style={styles.statItem}>
-//           <Text style={styles.statNumber}>
-//             {workoutsQuery.data?.data?.length || 0}
-//           </Text>
-//           <Text style={styles.statLabel}>WORKOUTS</Text>
-//         </View>
-//       </View>
-
-//       <Surface style={styles.powerSection} elevation={1}>
-//         <Text style={styles.powerTitle}>Power Level</Text>
-//         <Button mode="contained" style={styles.unknownButton}>
-//           Unknown
-//         </Button>
-//       </Surface>
-
-//       <View style={styles.menuGrid}>
-//         <TouchableOpacity style={styles.menuItem}>
-//           <MaterialCommunityIcons name="dumbbell" size={24} color="black" />
-//           <Text style={styles.menuText}>Workouts</Text>
-//         </TouchableOpacity>
-
-//         <TouchableOpacity
-//           style={styles.menuItem}
-//           onPress={() => router.push("/exercise")} // ✅ dùng router.push
-//         >
-//           <MaterialCommunityIcons name="clipboard-list" size={24} color="black" />
-//           <Text style={styles.menuText}>Exercises</Text>
-//         </TouchableOpacity>
-
-//         <TouchableOpacity style={styles.menuItem}>
-//           <MaterialCommunityIcons name="tape-measure" size={24} color="black" />
-//           <Text style={styles.menuText}>Measurements</Text>
-//         </TouchableOpacity>
-//       </View>
-//     </ScrollView>
-//   );
-// }
-
-// const styles = StyleSheet.create({
-//     scrollView: {
-//         flex: 1,
-//         backgroundColor: '#f5f5f5',
-//     },
-//     header: {
-//         flexDirection: 'row',
-//         justifyContent: 'space-between',
-//         alignItems: 'center',
-//         padding: 16,
-//         backgroundColor: '#003366',
-//     },
-//     headerTitle: {
-//         color: 'white',
-//         fontSize: 20,
-//         fontWeight: 'bold',
-//     },
-//     profileSection: {
-//         alignItems: 'center',
-//         padding: 20,
-//     },
-//     profileAvatar: {
-//         marginBottom: 10,
-//     },
-//     username: {
-//         fontSize: 24,
-//         fontWeight: 'bold',
-//         marginBottom: 5,
-//     },
-//     userId: {
-//         fontSize: 16,
-//         color: '#666',
-//         marginBottom: 10,
-//     },
-//     genderButton: {
-//         borderRadius: 20,
-//     },
-//     statsContainer: {
-//         flexDirection: 'row',
-//         justifyContent: 'space-around',
-//         padding: 20,
-//         backgroundColor: 'white',
-//         marginHorizontal: 10,
-//         borderRadius: 10,
-//     },
-//     statItem: {
-//         alignItems: 'center',
-//     },
-//     statNumber: {
-//         fontSize: 24,
-//         fontWeight: 'bold',
-//     },
-//     statLabel: {
-//         color: '#666',
-//         fontSize: 12,
-//     },
-//     powerSection: {
-//         margin: 10,
-//         padding: 15,
-//         borderRadius: 10,
-//     },
-//     powerTitle: {
-//         fontSize: 18,
-//         fontWeight: 'bold',
-//         marginBottom: 10,
-//     },
-//     unknownButton: {
-//         backgroundColor: '#0099ff',
-//     },
-//     menuGrid: {
-//         flexDirection: 'row',
-//         flexWrap: 'wrap',
-//         padding: 10,
-//         justifyContent: 'space-between',
-//     },
-//     menuItem: {
-//         width: '48%',
-//         backgroundColor: 'white',
-//         padding: 20,
-//         marginBottom: 10,
-//         borderRadius: 10,
-//         alignItems: 'center',
-//     },
-//     menuText: {
-//         marginTop: 10,
-//         fontSize: 16,
-//     },
-//     discordSection: {
-//         margin: 10,
-//         padding: 20,
-//         borderRadius: 10,
-//         backgroundColor: '#7289DA',
-//         alignItems: 'center',
-//     },
-//     discordTitle: {
-//         color: 'white',
-//         fontSize: 20,
-//         fontWeight: 'bold',
-//         marginVertical: 10,
-//     },
-//     discordDescription: {
-//         color: 'white',
-//         textAlign: 'center',
-//         marginBottom: 15,
-//     },
-//     discordButton: {
-//         borderColor: 'white',
-//         width: '100%',
-//     },
-// });

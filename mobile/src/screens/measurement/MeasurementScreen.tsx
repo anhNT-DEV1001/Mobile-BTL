@@ -80,13 +80,13 @@ export default function MeasurementScreen() {
 
     return (
         <View style={[styles.container, { backgroundColor: backgroundColor }]}>
-            <Appbar.Header
+            {/* <Appbar.Header
                 style={[styles.header, { backgroundColor: headerColor }]}
                 statusBarHeight={0}
             >
                 <Appbar.BackAction onPress={handleBack} color="#ffffff" />
                 <Appbar.Content title="Đo lường" titleStyle={styles.headerTitle} />
-            </Appbar.Header>
+            </Appbar.Header> */}
 
             <ScrollView contentContainerStyle={styles.scrollContent}>
 

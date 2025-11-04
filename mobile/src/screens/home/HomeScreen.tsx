@@ -36,9 +36,21 @@ export default function HomeScreen() {
                     style={styles.profileAvatar}
                 />
                 <Text style={styles.username}>{currentUser?.profile?.name || "Unknown User"}</Text>
-                <Text style={styles.userId}>{currentUser?.profile?.id || "ID Not Available"}</Text>
-                <Button mode="outlined" style={styles.genderButton}>
-                    Male
+                <View style={styles.bodyInfoContainer}>
+                    <Text style={styles.bodyInfo}>
+                        {currentUser?.profile?.height ? `${currentUser.profile.height} cm` : "N/A"}
+                    </Text>
+                    <Text style={styles.bodyInfoSeparator}>•</Text>
+                    <Text style={styles.bodyInfo}>
+                        {currentUser?.profile?.weight ? `${currentUser.profile.weight} kg` : "N/A"}
+                    </Text>
+                </View>
+                <Button 
+                    mode="outlined" 
+                    style={styles.genderButton}
+                    labelStyle={styles.genderButtonLabel}
+                >
+                    {currentUser?.profile?.gender || "Khong xac dinh"}
                 </Button>
             </View>
 
@@ -141,8 +153,25 @@ const styles = StyleSheet.create({
         color: '#666',
         marginBottom: 10,
     },
+    bodyInfoContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginBottom: 10,
+    },
+    bodyInfo: {
+        fontSize: 16,
+        color: '#666',
+    },
+    bodyInfoSeparator: {
+        fontSize: 16,
+        color: '#666',
+        marginHorizontal: 8,
+    },
     genderButton: {
         borderRadius: 20,
+    },
+    genderButtonLabel: {
+        textTransform: 'capitalize',
     },
     statsContainer: {
         flexDirection: 'row',

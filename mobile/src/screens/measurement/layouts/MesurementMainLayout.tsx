@@ -2,6 +2,7 @@ import React from "react";
 import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import { Slot, useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { IconButton } from "react-native-paper";
 
 export default function MesurementMainLayout() {
   const insets = useSafeAreaInsets();
@@ -9,7 +10,16 @@ export default function MesurementMainLayout() {
   return(
     <View style={[styles.container, { paddingTop: insets.top }]}>
           <View style={styles.header}>
-            <Text style={styles.headerTitle}>Mesurement</Text>
+            {/* <Text style={styles.headerTitle}>Mesurement</Text> */}
+            <View style={styles.headerLeft}>
+              <IconButton
+                icon="arrow-left"
+                iconColor="white"
+                size={24}
+                onPress={() => router.back()}
+              />
+              <Text style={styles.headerTitle}>Measurement</Text>
+            </View>
             <View style={styles.headerRight}>
               <TouchableOpacity 
               onPress={() => router.back()}
@@ -22,7 +32,7 @@ export default function MesurementMainLayout() {
           <View style={styles.content}>
             <Slot />
           </View>
-        </View>
+    </View>
   )
 }
 
@@ -35,6 +45,10 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
     paddingHorizontal: 16,
+  },
+  headerLeft: {
+    flexDirection: "row",
+    alignItems: "center",
   },
   headerTitle: { color: "white", fontSize: 18, fontWeight: "700" },
   headerRight: { flexDirection: "row", alignItems: "center" },

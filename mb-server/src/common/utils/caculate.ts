@@ -39,3 +39,12 @@ export function caculateAge(dob: Date): Number {
     const nowYear = new Date().getFullYear();
     return nowYear - year;
 }
+
+export function caculateBmi(height : number , weight: number) {
+    const bmi = weight / (height * height);
+    return bmi;
+}
+
+// export function caculateWorkoutLevel(data : any) {
+    
+// }

@@ -1,3 +1,4 @@
+import { name } from './../../../../mobile/node_modules/expo/node_modules/ci-info/index.d';
 import { HttpStatus, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { WorkOut, WorkOutDocument } from './schema/workout.schema';
@@ -9,12 +10,14 @@ import { WorkOutLevel, WorkoutStatus } from 'src/common/enums';
 import { Exercise, ExerciseDocument } from '../exercises/schema/exercises.schema';
 import { CreateWorkoutDto, UpdateWorkoutDto } from './dto/req/workout.request';
 import { WorkoutResponse } from './dto/res/workout.response';
+import { User, UserDocument } from '../user/schema/user.schema';
 
 @Injectable()
 export class WorkoutService {
     constructor(
         @InjectModel(WorkOut.name) private workoutModel: Model<WorkOutDocument>,
-        @InjectModel(Exercise.name) private exerciseModel: Model<ExerciseDocument>
+        @InjectModel(Exercise.name) private exerciseModel: Model<ExerciseDocument>,
+        @InjectModel(User.name) private userModel: Model<UserDocument> 
     ) { }
 
     toWorkoutResponse(workout: WorkOutDocument): WorkoutResponse {
@@ -85,5 +88,27 @@ export class WorkoutService {
         const workout = await this.workoutModel.findByIdAndDelete(workoutId);
         if (!workout) throw new ApiError("Bài tập này không tồn tại !", HttpStatus.BAD_REQUEST);
         return this.toWorkoutResponse(workout);
+    }
+
+    async getWoroutLevel(user: UserResponse): Promise<WorkOutLevel | null> {
+        const userListWorkout = await this.workoutModel.find({ createdBy: user.id });
+        if (!userListWorkout || userListWorkout.length === 0) {
+            return null;
+        }
+        const levelCounts = userListWorkout.reduce((counts, workout) => {
+            const level = workout.userLevel as WorkOutLevel;
+            if (level && Object.values(WorkOutLevel).includes(level)) {
+                counts[level] = (counts[level] || 0) + 1;
+            }
+            return counts;
+        }, {} as Record<WorkOutLevel, number>); 
+        const countedLevels = Object.keys(levelCounts) as WorkOutLevel[];
+        if (countedLevels.length === 0) {
+            return null;
+        }
+        const dominantLevel = countedLevels.reduce((levelA, levelB) => {
+            return levelCounts[levelA] > levelCounts[levelB] ? levelA : levelB;
+        });
+        return dominantLevel;
     }
 }

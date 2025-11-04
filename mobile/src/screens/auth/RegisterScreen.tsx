@@ -92,7 +92,7 @@ export default function RegisterScreen() {
                     {/* Header Section */}
                     <View style={styles.header}>
                         <MaterialCommunityIcons name="account-plus" size={50} color="#0096F3" />
-                        <Text style={styles.appName}>VAI LON</Text>
+                        <Text style={styles.appName}>My strength level</Text>
                         <Text style={styles.headerSubtitle}>Hãy nhập thông tin của bạn</Text>
                     </View>
 

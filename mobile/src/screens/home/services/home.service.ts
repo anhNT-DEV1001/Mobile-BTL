@@ -13,3 +13,12 @@ export const updateUserProfile = async (userId: string, data: any): Promise<Base
     const res = await api.patch(`/user/${userId}`, data);
     return res.data;
 };
+
+/**
+ * 
+ * @returns string
+ */
+export const getUserWorkoutLevel = async() => {
+    const res = await api.get('/workout/level');
+    return res.data;
+}

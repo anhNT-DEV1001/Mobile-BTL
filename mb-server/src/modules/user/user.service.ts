@@ -3,11 +3,12 @@ import { InjectConnection, InjectModel } from '@nestjs/mongoose';
 import { User, UserDocument } from './schema/user.schema';
 import { Connection, Model } from 'mongoose';
 import { CreateUserDto, UpdateUserDto } from './dto/req/user.request';
-import { UserStatus } from 'src/common/enums';
+import { UserGender, UserStatus } from 'src/common/enums';
 import * as bcrypt from 'bcrypt';
 import { UserResponse } from './dto/res/user.response';
 import { ApiError } from 'src/common/api';
 import { Token, TokenDocument } from '../auth/schema/token.schema';
+import { caculateBmi, caculateBmrAndTdee } from 'src/common/utils';
 
 @Injectable()
 export class UserService {
@@ -96,4 +97,39 @@ export class UserService {
     // async userBmi(user : (UserResponse) {
     //     const bmi = this.userBmi
     // }
+    async userBmi(user : UserResponse) {
+        let message = '';
+        const BMI = caculateBmi(user.profile?.height as number, user.profile?.weight as number);
+        if (BMI < 18.5) {
+            message = 'Thiếu cân';
+        } else if (BMI >= 18.5 && BMI < 22.9){
+            message = 'Bình thường';
+        } else if (BMI >= 23 && BMI < 24.9) {
+            message = 'Thừa cân';
+        } else if (BMI >= 25 && BMI < 29.9) {
+            message = 'Béo phì độ I';
+        } else {
+            message = 'Béo phì độ II';
+        }
+        return {
+            bmi: BMI,
+            message: message
+        };
+    }
+    async userEnergyNeeds(user: UserResponse){
+        if (!user.profile) {
+            throw new ApiError('Người dùng chưa có thông tin cá nhân !', HttpStatus.BAD_REQUEST);
+        }
+        const {height, weight, dob, gender} = user.profile;
+        if (!height || !weight || !dob || !gender) {
+            throw new ApiError('Thiếu thông tin (chiều cao, cân nặng, ngày sinh, giới tính) để tính toán!', HttpStatus.BAD_REQUEST);
+        }
+        const calculations = caculateBmrAndTdee(
+            height as number,
+            weight as number,
+            new Date(dob),
+            gender as UserGender
+        );
+        return calculations;
+    }
 }

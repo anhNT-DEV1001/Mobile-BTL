@@ -75,10 +75,28 @@ export default function HomeScreen() {
                     <Text variant="headlineMedium" style={styles.username}>
                         {currentUser?.profile?.name || "Unknown User"}
                     </Text>
-                    <Chip 
-                        mode="outlined" 
-                        icon="human-male"
-                        style={styles.genderChip}
+                    <Text style={styles.statLabel}>WORKOUTS</Text>
+                </View>
+            </View>
+
+            <Surface style={styles.powerSection} elevation={1}>
+                <Text style={styles.powerTitle}>Power Level</Text>
+                <Button mode="contained" style={styles.unknownButton}>
+                    {userWorkoutLevel.data?.data || ""}
+                </Button>
+            </Surface>
+
+            <View style={styles.menuGrid}>
+                <TouchableOpacity 
+                style={styles.menuItem}
+                onPress={() => router.push('/workout')}
+                >
+                    <MaterialCommunityIcons name="dumbbell" size={24} color="black" />
+                    <Text style={styles.menuText}>Workouts</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                    style={styles.menuItem}
+                    onPress={() => router.push('/exercise')}
                     >
                         Male
                     </Chip>

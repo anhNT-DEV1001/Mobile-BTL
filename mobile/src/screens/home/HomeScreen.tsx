@@ -66,7 +66,7 @@ export default function HomeScreen() {
             </Surface>
 
             {/* Profile Section */}
-            <Card style={styles.profileCard} elevation={1}>
+            {/* <Card style={styles.profileCard} elevation={1}>
                 <Card.Content style={styles.profileContent}>
                     <Avatar.Image 
                         size={100}
@@ -101,7 +101,7 @@ export default function HomeScreen() {
                         Male
                     </Chip>
                 </Card.Content>
-            </Card>
+            </Card> */}
 
             {/* Stats & Power Level Card */}
             <Card style={styles.statsCard} elevation={1}>

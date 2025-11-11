@@ -1,5 +1,5 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { IsDateString, IsNotEmpty, IsOptional, MaxLength } from "class-validator";
+import { IsDate, IsDateString, IsNotEmpty, IsOptional, MaxLength } from "class-validator";
 
 export class CreateWorkoutDto {
     @ApiProperty({ description: 'Tên buổi tập', example: 'Morning Workout', required: false })
@@ -9,7 +9,7 @@ export class CreateWorkoutDto {
 
     @ApiProperty({ description: 'Ngày tập', example: '2025-01-15' })
     @IsNotEmpty({ message: 'Vui lòng chọn ngày tập!' })
-    @IsDateString({}, { message: 'Ngày tập không hợp lệ!' })
+    @IsDate( { message: 'Ngày tập không hợp lệ!' })
     date: Date;
 
     @ApiProperty({ description: 'Ghi chú', required: false })
@@ -25,7 +25,7 @@ export class UpdateWorkoutDto {
 
     @ApiProperty({ description: 'Ngày tập', required: false })
     @IsOptional()
-    @IsDateString({}, { message: 'Ngày tập không hợp lệ!' })
+    @IsDate({ message: 'Ngày tập không hợp lệ!' })
     date?: Date;
 
     @ApiProperty({ description: 'Ghi chú', required: false })

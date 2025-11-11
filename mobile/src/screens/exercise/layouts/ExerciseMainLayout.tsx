@@ -4,7 +4,7 @@ import { Slot, useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { IconButton } from "react-native-paper";
 
-export default function MesurementMainLayout() {
+export default function ExerciseMainLayout() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   return(
@@ -18,7 +18,7 @@ export default function MesurementMainLayout() {
                 size={24}
                 onPress={() => router.back()}
               />
-              <Text style={styles.headerTitle}>Measurement</Text>
+              <Text style={styles.headerTitle}>Exercise</Text>
             </View>
             <View style={styles.headerRight}>
               <TouchableOpacity 

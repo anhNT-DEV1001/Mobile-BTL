@@ -1,4 +1,3 @@
-import { name } from './../../../../mobile/node_modules/expo/node_modules/ci-info/index.d';
 import { HttpStatus, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { WorkOut, WorkOutDocument } from './schema/workout.schema';
@@ -11,13 +10,14 @@ import { Exercise, ExerciseDocument } from '../exercises/schema/exercises.schema
 import { CreateWorkoutDto, UpdateWorkoutDto } from './dto/req/workout.request';
 import { WorkoutResponse } from './dto/res/workout.response';
 import { User, UserDocument } from '../user/schema/user.schema';
-
+import { WorkOutTemplate, WorkOutTemplateDocument } from './schema/workout-template'; 
 @Injectable()
 export class WorkoutService {
     constructor(
         @InjectModel(WorkOut.name) private workoutModel: Model<WorkOutDocument>,
         @InjectModel(Exercise.name) private exerciseModel: Model<ExerciseDocument>,
-        @InjectModel(User.name) private userModel: Model<UserDocument> 
+        @InjectModel(User.name) private userModel: Model<UserDocument> ,
+        @InjectModel(WorkOutTemplate.name) private workoutTemplate : Model<WorkOutTemplateDocument>
     ) { }
 
     toWorkoutResponse(workout: WorkOutDocument): WorkoutResponse {
@@ -110,5 +110,27 @@ export class WorkoutService {
             return levelCounts[levelA] > levelCounts[levelB] ? levelA : levelB;
         });
         return dominantLevel;
+    }
+    //---------------------Workout Template-------------------------------------
+    async createWorkOutTemplate (dto : any) {
+        const data = {
+            ...dto
+        }
+        await this.workoutTemplate.create(dto);
+    }
+
+    async getWorkOutTemplates(user: UserResponse) {
+        try {
+            const templates = await this.workoutTemplate.exists({createdBy : user.id});
+            if(!templates) {
+                const response = await this.workoutTemplate.find({createdBy : user.id})
+                .populate(WorkOut.name)
+                .lean();
+                
+                return response
+            } else return await this.workoutTemplate.find({type : 'default'});
+        } catch (error : any) {
+            throw new ApiError(error.message , HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 }

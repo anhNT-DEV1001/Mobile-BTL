@@ -5,13 +5,15 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { WorkOut, WorkOutSchema } from './schema/workout.schema';
 import { Exercise, ExerciseSchema } from '../exercises/schema/exercises.schema';
 import { User, UserSchema } from '../user/schema/user.schema';
+import { WorkOutTemplate, WorkOutTemplateSchema } from './schema/workout-template';
 
 @Module({
   imports: [
     MongooseModule.forFeature([
       { name: WorkOut.name, schema: WorkOutSchema },
       { name: Exercise.name, schema: ExerciseSchema },
-      {name : User.name , schema : UserSchema}
+      {name : User.name , schema : UserSchema},
+      {name : WorkOutTemplate.name , schema: WorkOutTemplateSchema}
     ])],
   providers: [WorkoutService],
   controllers: [WorkoutController]

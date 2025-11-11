@@ -1,22 +1,44 @@
 import React, { useState, useEffect } from "react";
 import {
-  View,
-  Text,
-  TextInput,
   ScrollView,
+  View,
+  Image,
+  LayoutAnimation,
   TouchableOpacity,
-  ActivityIndicator,
-  StyleSheet,
-  Dimensions,
+  Modal,
+  SafeAreaView,
 } from "react-native";
+import {
+  Text,
+  Button,
+  Chip,
+  TextInput,
+  ActivityIndicator,
+  Card,
+  Divider,
+} from "react-native-paper";
 import { Ionicons } from "@expo/vector-icons";
 import { useExercise } from "../exercise/hooks/useExercise";
 import { Exercise } from "../exercise/services/exercise.service";
+import { useNavigation } from "@react-navigation/native";
 
-const { width } = Dimensions.get("window");
+type Filters = {
+  q: string;
+  force: string;
+  level: string;
+  mechanic: string;
+  equipment: string;
+  primaryMuscles: string;
+  category: string;
+  sort: string;
+  page: string;
+  limit: string;
+};
 
 export default function ExerciseScreen() {
-  const [filters, setFilters] = useState({
+  const navigation = useNavigation<any>();
+
+  const [filters, setFilters] = useState<Filters>({
     q: "",
     force: "",
     level: "",
@@ -24,256 +46,583 @@ export default function ExerciseScreen() {
     equipment: "",
     primaryMuscles: "",
     category: "",
-    sort: "createdAt:desc",
+    sort: "",
     page: "1",
     limit: "10",
   });
 
   const { getExercisesQuery } = useExercise(filters);
+  const [selectedExercise, setSelectedExercise] = useState<Exercise | null>(null);
+  const [showModal, setShowModal] = useState(false);
+  const [showFilters, setShowFilters] = useState(false);
+
+  const preURL = "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/";
 
   useEffect(() => {
     getExercisesQuery.refetch();
   }, [filters]);
 
-  const exercises = (getExercisesQuery as any)?.data?.data?.items  || [];
+  const exercises = ((getExercisesQuery as any)?.data?.data?.items as Exercise[]) || [];
+
+  const toggleFilter = (field: keyof Filters, value: string) => {
+    setFilters((prev) => ({
+      ...prev,
+      [field]: prev[field] === value ? "" : value,
+    }));
+  };
+
+  const goFirstPage = () => {
+    setFilters((prev) => ({
+      ...prev,
+      page: "1",
+    }));
+  };
+
+  const totalPages = Math.ceil(
+    ((getExercisesQuery as any)?.data?.data?.total || 0) / Number(filters.limit)
+  );
+
+  const goLastPage = () => {
+    setFilters((prev) => ({
+      ...prev,
+      page: totalPages.toString(),
+    }));
+  };
+
+
+  const openModal = (exercise: Exercise) => {
+    setSelectedExercise(exercise);
+    setShowModal(true);
+  };
+  const closeModal = () => {
+    setShowModal(false);
+    setSelectedExercise(null);
+  };
+
+  const toggleFilters = () => {
+    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+    setShowFilters(!showFilters);
+  };
+
+  const nextPage = () => {
+    setFilters((prev) => ({
+      ...prev,
+      page: (Number(prev.page) + 1).toString(),
+    }));
+  };
+
+  const prevPage = () => {
+    setFilters((prev) => ({
+      ...prev,
+      page: Math.max(1, Number(prev.page) - 1).toString(),
+    }));
+  };
+
+  const chipRow = {
+    flexDirection: "row" as const,
+    flexWrap: "wrap" as const,
+    justifyContent: "center" as const,
+    marginBottom: 12,
+  };
+
+  const sectionTitle = {
+    textAlign: "center" as const,
+    marginBottom: 6,
+    color: "#1E88E5",
+    fontWeight: "bold" as const,
+  };
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      <Text style={styles.header}> Danh sách Bài Tập</Text>
-
-      {/* 🔍 Tìm kiếm */}
-      <View style={styles.searchContainer}>
-        <Ionicons name="search" size={20} color="#2B6CB0" style={{ marginRight: 5 }} />
-        <TextInput
-          placeholder="Tìm kiếm theo tên..."
-          placeholderTextColor="#A0AEC0"
-          value={filters.q}
-          onChangeText={(text) => setFilters({ ...filters, q: text })}
-          style={styles.searchInput}
-        />
-      </View>
-
-      {/* ⚡ Lực tác động (force) */}
-      <Text style={styles.sectionTitle}>Lực tác động (Force)</Text>
-      <View style={styles.filterRow}>
-        {["push", "pull", "static"].map((item) => (
-          <TouchableOpacity
-            key={item}
-            style={[styles.filterButton, filters.force === item && styles.filterButtonActive]}
-            onPress={() =>
-              setFilters({ ...filters, force: filters.force === item ? "" : item })
-            }
+    <SafeAreaView style={{ flex: 1, backgroundColor: "#F1F5F9" }}>
+      <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 120 }}>
+        {/* Back + Title */}
+        <View style={{ marginBottom: 16 }}>
+          <Text
+            variant="headlineMedium"
+            style={{
+              textAlign: "center",
+              color: "#1E88E5",
+              fontWeight: "bold",
+              // position: "absolute",
+              left: 0,
+              right: 0,
+              top: 0,
+            }}
           >
-            <Text
-              style={[styles.filterText, filters.force === item && styles.filterTextActive]}
-            >
-              {item.toUpperCase()}
-            </Text>
-          </TouchableOpacity>
-        ))}
-      </View>
+            Danh sách bài tập
+          </Text>
+          {/* <Button
+                    icon="arrow-left"
+                    mode="text"
+                    onPress={() => navigation.goBack()}
+                    textColor="#1E88E5"
+                    style={{ alignSelf: "flex-start" }} children={undefined}  
+            /> */}
+        </View>
 
-      {/* 💪 Cấp độ (level) */}
-      <Text style={styles.sectionTitle}>Cấp độ (Level)</Text>
-      <View style={styles.filterRow}>
-        {["beginner", "intermediate", "advanced"].map((item) => (
-          <TouchableOpacity
-            key={item}
-            style={[styles.filterButton, filters.level === item && styles.filterButtonActive]}
-            onPress={() =>
-              setFilters({ ...filters, level: filters.level === item ? "" : item })
-            }
+        {/* Hiển thị/ẩn bộ lọc */}
+        <Button
+          mode="contained-tonal"
+          icon={showFilters ? "filter-minus" : "filter"}
+          onPress={toggleFilters}
+          style={{
+            marginBottom: 16,
+            backgroundColor: "#E3F2FD",
+            borderRadius: 10,
+          }}
+          textColor="#0D47A1"
+        >
+          {showFilters ? "Ẩn bộ lọc" : "Hiển thị bộ lọc"}
+        </Button>
+
+        {showFilters && (
+          <View
+            style={{
+              backgroundColor: "#FFFFFF",
+              borderRadius: 12,
+              padding: 12,
+              marginBottom: 16,
+              shadowColor: "#000",
+              shadowOpacity: 0.05,
+              shadowRadius: 4,
+            }}
           >
-            <Text
-              style={[styles.filterText, filters.level === item && styles.filterTextActive]}
-            >
-              {item.toUpperCase()}
-            </Text>
-          </TouchableOpacity>
-        ))}
-      </View>
+            <ScrollView nestedScrollEnabled>
+              <TextInput
+                mode="outlined"
+                label="Tìm kiếm theo tên"
+                value={filters.q}
+                onChangeText={(text) => setFilters({ ...filters, q: text })}
+                left={<TextInput.Icon icon="magnify" />}
+                style={{ marginBottom: 16, backgroundColor: "#fff" }}
+                outlineColor="#BBDEFB"
+                activeOutlineColor="#1E88E5"
+              />
 
-      {/* ⚙️ Mechanic */}
-      <Text style={styles.sectionTitle}>Cơ chế (Mechanic)</Text>
-      <TextInput
-        placeholder="Ví dụ: compound, isolation..."
-        placeholderTextColor="#A0AEC0"
-        value={filters.mechanic}
-        onChangeText={(text) => setFilters({ ...filters, mechanic: text })}
-        style={styles.input}
-      />
-
-      {/* 🏋️ Equipment */}
-      <Text style={styles.sectionTitle}>Dụng cụ (Equipment)</Text>
-      <TextInput
-        placeholder="Ví dụ: barbell, dumbbell..."
-        placeholderTextColor="#A0AEC0"
-        value={filters.equipment}
-        onChangeText={(text) => setFilters({ ...filters, equipment: text })}
-        style={styles.input}
-      />
-
-      {/* 💪 Cơ chính (Primary Muscles) */}
-      <Text style={styles.sectionTitle}>Cơ chính (Primary Muscles)</Text>
-      <TextInput
-        placeholder="Ví dụ: chest, legs..."
-        placeholderTextColor="#A0AEC0"
-        value={filters.primaryMuscles}
-        onChangeText={(text) => setFilters({ ...filters, primaryMuscles: text })}
-        style={styles.input}
-      />
-
-      {/* 🧩 Danh mục (Category) */}
-      <Text style={styles.sectionTitle}>Danh mục (Category)</Text>
-      <TextInput
-        placeholder="Ví dụ: strength, cardio..."
-        placeholderTextColor="#A0AEC0"
-        value={filters.category}
-        onChangeText={(text) => setFilters({ ...filters, category: text })}
-        style={styles.input}
-      />
-
-      {/* 🕒 Sắp xếp (Sort) */}
-      <Text style={styles.sectionTitle}>Sắp xếp (Sort)</Text>
-      <TextInput
-        placeholder="Ví dụ: createdAt:desc, name:asc"
-        placeholderTextColor="#A0AEC0"
-        value={filters.sort}
-        onChangeText={(text) => setFilters({ ...filters, sort: text })}
-        style={styles.input}
-      />
-
-      {/* 📄 Phân trang */}
-      <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
-        <View style={{ flex: 1, marginRight: 5 }}>
-          <Text style={styles.sectionTitle}>Trang (Page)</Text>
-          <TextInput
-            placeholder="1"
-            keyboardType="numeric"
-            value={filters.page}
-            onChangeText={(text) => setFilters({ ...filters, page: text })}
-            style={styles.input}
-          />
-        </View>
-        <View style={{ flex: 1, marginLeft: 5 }}>
-          <Text style={styles.sectionTitle}>Giới hạn (Limit)</Text>
-          <TextInput
-            placeholder="10"
-            keyboardType="numeric"
-            value={filters.limit}
-            onChangeText={(text) => setFilters({ ...filters, limit: text })}
-            style={styles.input}
-          />
-        </View>
-      </View>
-
-      {/* 🔄 Làm mới */}
-      <TouchableOpacity onPress={() => getExercisesQuery.refetch()} style={styles.refreshButton}>
-        <Ionicons name="refresh" size={18} color="#fff" />
-        <Text style={styles.refreshText}>Làm mới danh sách</Text>
-      </TouchableOpacity>
-
-      {/* 📋 Hiển thị danh sách */}
-      {getExercisesQuery.isLoading ? (
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#2B6CB0" />
-          <Text style={{ color: "#2B6CB0", marginTop: 5 }}>Đang tải bài tập...</Text>
-        </View>
-      ) : (
-        <View style={styles.exerciseList}>
-          {exercises.length === 0 ? (
-            <Text style={styles.emptyText}>Không có bài tập nào phù hợp.</Text>
-          ) : (
-            exercises.map((item: Exercise, idx: number) => (
-              <View key={idx} style={styles.card}>
-                <Text style={styles.exerciseName}>{item.name}</Text>
-                {item.level && <Text style={styles.exerciseInfo}>Cấp độ: {item.level}</Text>}
-                {item.force && <Text style={styles.exerciseInfo}>Lực: {item.force}</Text>}
-                {item.category && (
-                  <Text style={styles.exerciseInfo}>Danh mục: {item.category}</Text>
-                )}
-                <Text style={styles.dateText}>
-                  Cập nhật:{" "}
-                  {item.updatedAt
-                    ? new Date(item.updatedAt).toLocaleDateString()
-                    : "Không rõ"}
-                </Text>
+              {/* Force */}
+              <Text variant="titleMedium" style={sectionTitle}>
+                Lực tác động (Force)
+              </Text>
+              <View style={chipRow}>
+                {["push", "pull", "static"].map((item) => (
+                  <Chip
+                    key={item}
+                    selected={filters.force === item}
+                    showSelectedCheck={false}
+                    onPress={() => toggleFilter("force", item)}
+                    style={{
+                      margin: 4,
+                      backgroundColor:
+                        filters.force === item ? "#64B5F6" : "#E3F2FD",
+                    }}
+                    textStyle={{
+                      color: filters.force === item ? "#fff" : "#0D47A1",
+                      fontWeight: "600",
+                    }}
+                  >
+                    {item.toUpperCase()}
+                  </Chip>
+                ))}
               </View>
-            ))
-          )}
+
+              {/* Level */}
+              <Text variant="titleMedium" style={sectionTitle}>
+                Cấp độ (Level)
+              </Text>
+              <View style={chipRow}>
+                {["beginner", "intermediate", "advanced"].map((lvl) => (
+                  <Chip
+                    key={lvl}
+                    selected={filters.level === lvl}
+                    showSelectedCheck={false}
+                    onPress={() => toggleFilter("level", lvl)}
+                    style={{
+                      margin: 4,
+                      backgroundColor:
+                        filters.level === lvl ? "#64B5F6" : "#E3F2FD",
+                    }}
+                    textStyle={{
+                      color: filters.level === lvl ? "#fff" : "#0D47A1",
+                      fontWeight: "600",
+                    }}
+                  >
+                    {lvl}
+                  </Chip>
+                ))}
+              </View>
+
+              {/* Mechanic */}
+              <Text variant="titleMedium" style={sectionTitle}>
+                Loại chuyển động (Mechanic)
+              </Text>
+              <View style={chipRow}>
+                {["compound", "isolation"].map((m) => (
+                  <Chip
+                    key={m}
+                    selected={filters.mechanic === m}
+                    showSelectedCheck={false}
+                    onPress={() => toggleFilter("mechanic", m)}
+                    style={{
+                      margin: 4,
+                      backgroundColor:
+                        filters.mechanic === m ? "#64B5F6" : "#E3F2FD",
+                    }}
+                    textStyle={{
+                      color: filters.mechanic === m ? "#fff" : "#0D47A1",
+                      fontWeight: "600",
+                    }}
+                  >
+                    {m}
+                  </Chip>
+                ))}
+              </View>
+
+              {/* Equipment */}
+              <Text variant="titleMedium" style={sectionTitle}>
+                Thiết bị (Equipment)
+              </Text>
+              <View style={chipRow}>
+                {["barbell", "dumbbell", "machine", "body only", "cable"].map((e) => (
+                  <Chip
+                    key={e}
+                    selected={filters.equipment === e}
+                    showSelectedCheck={false}
+                    onPress={() => toggleFilter("equipment", e)}
+                    style={{
+                      margin: 4,
+                      backgroundColor:
+                        filters.equipment === e ? "#64B5F6" : "#E3F2FD",
+                    }}
+                    textStyle={{
+                      color: filters.equipment === e ? "#fff" : "#0D47A1",
+                      fontWeight: "600",
+                    }}
+                  >
+                    {e}
+                  </Chip>
+                ))}
+              </View>
+
+              {/* Primary Muscles */}
+              <Text variant="titleMedium" style={sectionTitle}>
+                Cơ chính (Primary Muscles)
+              </Text>
+              <View style={chipRow}>
+                {["chest", "legs", "arms", "back", "shoulders"].map((item) => (
+                  <Chip
+                    key={item}
+                    selected={filters.primaryMuscles === item}
+                    onPress={() => toggleFilter("primaryMuscles", item)}
+                    showSelectedCheck={false}
+                    style={{
+                      margin: 4,
+                      backgroundColor:
+                        filters.primaryMuscles === item ? "#64B5F6" : "#E3F2FD",
+                    }}
+                    textStyle={{
+                      color: filters.primaryMuscles === item ? "#fff" : "#0D47A1",
+                      fontWeight: "600",
+                    }}
+                  >
+                    {item}
+                  </Chip>
+                ))}
+              </View>
+
+              {/* Category */}
+              <Text variant="titleMedium" style={sectionTitle}>
+                Danh mục (Category)
+              </Text>
+              <View style={chipRow}>
+                {["strength", "cardio", "stretching"].map((cat) => (
+                  <Chip
+                    key={cat}
+                    selected={filters.category === cat}
+                    showSelectedCheck={false}
+                    onPress={() => toggleFilter("category", cat)}
+                    style={{
+                      margin: 4,
+                      backgroundColor:
+                        filters.category === cat ? "#64B5F6" : "#E3F2FD",
+                    }}
+                    textStyle={{
+                      color: filters.category === cat ? "#fff" : "#0D47A1",
+                      fontWeight: "600",
+                    }}
+                  >
+                    {cat}
+                  </Chip>
+                ))}
+              </View>
+
+              {/* Sort */}
+              <Text variant="titleMedium" style={sectionTitle}>
+                Sắp xếp theo chữ cái (Alphabet)
+              </Text>
+              <View style={chipRow}>
+                {["name:asc", "name:desc"].map((s) => (
+                  <Chip
+                    key={s}
+                    selected={filters.sort === s}
+                    showSelectedCheck={false}
+                    onPress={() => toggleFilter("sort", s)}
+                    style={{
+                      margin: 4,
+                      backgroundColor: filters.sort === s ? "#64B5F6" : "#E3F2FD",
+                    }}
+                    textStyle={{
+                      color: filters.sort === s ? "#fff" : "#0D47A1",
+                      fontWeight: "600",
+                    }}
+                  >
+                    {s === "name:asc" ? "A → Z" : "Z → A"}
+                  </Chip>
+                ))}
+              </View>
+            </ScrollView>
+          </View>
+        )}
+
+        {/* Refresh */}
+        <Button
+          mode="contained"
+          icon="refresh"
+          onPress={() => getExercisesQuery.refetch()}
+          style={{
+            borderRadius: 10,
+            marginBottom: 16,
+            backgroundColor: "#42A5F5",
+          }}
+        >
+          Làm mới danh sách
+        </Button>
+
+        {/* Danh sách bài tập */}
+        {getExercisesQuery.isLoading ? (
+          <View style={{ alignItems: "center", marginTop: 20 }}>
+            <ActivityIndicator animating={true} color="#1E88E5" />
+            <Text style={{ marginTop: 8 }}>Đang tải bài tập...</Text>
+          </View>
+        ) : (
+          <View>
+            {exercises.length === 0 ? (
+              <Text style={{ textAlign: "center", color: "#777", fontSize: 16 }}>
+                Không có bài tập nào phù hợp.
+              </Text>
+            ) : (
+              exercises.map((item: Exercise, idx: number) => (
+                <TouchableOpacity key={idx} onPress={() => openModal(item)}>
+                  <Card
+                    style={{
+                      marginBottom: 12,
+                      backgroundColor: "#FFFFFF",
+                      borderRadius: 12,
+                    }}
+                  >
+                    <Card.Title
+                      title={item.name}
+                      titleVariant="titleLarge"
+                      subtitle={`Cấp độ: ${item.level || "?"}`}
+                      left={(props) => (
+                        <Ionicons
+                          {...props}
+                          name="barbell-outline"
+                          size={26}
+                          color="#1E88E5"
+                        />
+                      )}
+                    />
+                    <Card.Content>
+                      {item.force && <Text>Lực: {item.force}</Text>}
+                      {item.category && <Text>Danh mục: {item.category}</Text>}
+                      <Divider style={{ marginVertical: 6 }} />
+                      <Text style={{ fontSize: 12, color: "#666" }}>
+                        Cập nhật:{" "}
+                        {item.updatedAt
+                          ? new Date(item.updatedAt).toLocaleDateString()
+                          : "Không rõ"}
+                      </Text>
+                    </Card.Content>
+                  </Card>
+                </TouchableOpacity>
+              ))
+            )}
+          </View>
+        )}
+
+        {/* Pagination */}
+        <View
+          style={{
+            flexDirection: "row",
+            justifyContent: "center",
+            alignItems: "center",
+            marginTop: 16,
+            gap: 1,
+          }}
+        >
+
+          <Button
+            mode="outlined"
+            onPress={goFirstPage}
+            icon="chevron-double-left"
+            style={{
+              borderColor: "#1E88E5",
+              marginHorizontal: 1,
+            }}
+            textColor="#1E88E5"
+            disabled={Number(filters.page) <= 1}
+          >
+            Đầu
+          </Button>
+
+          <Button
+            mode="outlined"
+            onPress={prevPage}
+            icon="chevron-left"
+            style={{
+              borderColor: "#1E88E5",
+              marginHorizontal: 1,
+            }}
+            textColor="#1E88E5"
+            disabled={Number(filters.page) <= 1}
+          >
+            Trước
+          </Button>
+
+          <Button
+            mode="outlined"
+            onPress={nextPage}
+            icon="chevron-right"
+            contentStyle={{ flexDirection: "row-reverse" }}
+            style={{
+              borderColor: "#1E88E5",
+              marginHorizontal: 1,
+            }}
+            textColor="#1E88E5"
+            disabled={Number(filters.page) >= totalPages}
+          >
+            Tiếp
+          </Button>
+
+           <Button
+            mode="outlined"
+            onPress={goLastPage}
+            icon="chevron-double-right"
+            contentStyle={{ flexDirection: "row-reverse" }}
+            style={{ 
+              borderColor: "#1E88E5", 
+              marginHorizontal: 1, 
+            }}
+            textColor="#1E88E5"
+            disabled={Number(filters.page) >= totalPages}
+          >
+            Cuối
+          </Button>
+          
         </View>
-      )}
-    </ScrollView>
+
+        {/* Popup chi tiết */}
+        <Modal
+          visible={showModal}
+          animationType="slide"
+          transparent={true}
+          onRequestClose={closeModal}
+        >
+          <View
+            style={{
+              flex: 1,
+              backgroundColor: "rgba(0,0,0,0.7)",
+              justifyContent: "center",
+              padding: 16,
+            }}
+          >
+            <View
+              style={{
+                backgroundColor: "#fff",
+                borderRadius: 12,
+                padding: 16,
+                maxHeight: "90%",
+              }}
+            >
+              <ScrollView>
+                {selectedExercise && (
+                  <>
+                    <Text
+                      style={{
+                        fontSize: 22,
+                        fontWeight: "bold",
+                        textAlign: "center",
+                        marginBottom: 10,
+                      }}
+                    >
+                      {selectedExercise.name}
+                    </Text>
+
+                    {selectedExercise.gif && (
+                      <Image
+                        source={{ uri: selectedExercise.gif }}
+                        style={{
+                          width: "100%",
+                          height: 250,
+                          borderRadius: 10,
+                          marginBottom: 10,
+                        }}
+                        resizeMode="cover"
+                      />
+                    )}
+
+                    <Text>Lực: {selectedExercise.force || "?"}</Text>
+                    <Text>Cấp độ: {selectedExercise.level || "?"}</Text>
+                    <Text>Danh mục: {selectedExercise.category || "?"}</Text>
+
+                    <Text style={{ fontWeight: "bold", marginTop: 10 }}>
+                      Hướng dẫn:
+                    </Text>
+                    {(selectedExercise.instructions || []).map((ins: string | number | bigint | boolean | React.ReactElement<unknown, string | React.JSXElementConstructor<any>> | Iterable<React.ReactNode> | React.ReactPortal | Promise<string | number | bigint | boolean | React.ReactPortal | React.ReactElement<unknown, string | React.JSXElementConstructor<any>> | Iterable<React.ReactNode> | null | undefined> | null | undefined, i: React.Key | null | undefined) => (
+                      <Text key={i}>• {ins}</Text>
+                    ))}
+
+                    <Text style={{ fontWeight: "bold", marginTop: 10 }}>Hình ảnh:</Text>
+                    <View
+                      style={{
+                        flexDirection: "row",
+                        flexWrap: "wrap",
+                        justifyContent: "center",
+                      }}
+                    >
+                      {(selectedExercise.images || []).map((img, idx) => (
+                        <Image
+                          key={idx}
+                          source={{ uri: `${preURL}${img}` }}
+                          style={{
+                            width: 100,
+                            height: 100,
+                            margin: 5,
+                            borderRadius: 10,
+                          }}
+                        />
+                      ))}
+                    </View>
+
+                    <Button
+                      mode="contained"
+                      onPress={closeModal}
+                      style={{
+                        marginTop: 20,
+                        backgroundColor: "#1E88E5",
+                        borderRadius: 10,
+                      }}
+                    >
+                      Đóng
+                    </Button>
+                  </>
+                )}
+              </ScrollView>
+            </View>
+          </View>
+        </Modal>
+      </ScrollView>
+    </SafeAreaView>
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#F7FAFC" },
-  content: { padding: 16, paddingBottom: 100 },
-  header: { fontSize: 22, fontWeight: "700", color: "#2B6CB0", textAlign: "center", marginBottom: 16 },
-  searchContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#fff",
-    borderColor: "#BEE3F8",
-    borderWidth: 1,
-    borderRadius: 12,
-    paddingHorizontal: 10,
-    marginBottom: 15,
-  },
-  searchInput: { flex: 1, height: 40, color: "#2D3748" },
-  sectionTitle: { color: "#2B6CB0", fontWeight: "600", fontSize: 16, marginVertical: 6 },
-  filterRow: { flexDirection: "row", justifyContent: "space-between", marginBottom: 10 },
-  filterButton: {
-    flex: 1,
-    marginHorizontal: 4,
-    borderRadius: 10,
-    backgroundColor: "#E3F2FD",
-    paddingVertical: 8,
-    alignItems: "center",
-    borderWidth: 1,
-    borderColor: "#90CAF9",
-  },
-  filterButtonActive: { backgroundColor: "#2B6CB0", borderColor: "#2B6CB0" },
-  filterText: { color: "#2B6CB0", fontWeight: "600" },
-  filterTextActive: { color: "#fff" },
-  input: {
-    backgroundColor: "#fff",
-    borderColor: "#BEE3F8",
-    borderWidth: 1,
-    borderRadius: 10,
-    paddingHorizontal: 10,
-    paddingVertical: 8,
-    color: "#2D3748",
-    marginBottom: 12,
-  },
-  refreshButton: {
-    backgroundColor: "#2B6CB0",
-    borderRadius: 12,
-    paddingVertical: 10,
-    flexDirection: "row",
-    justifyContent: "center",
-    alignItems: "center",
-    marginBottom: 20,
-  },
-  refreshText: { color: "#fff", fontWeight: "600", marginLeft: 8 },
-  loadingContainer: { alignItems: "center", marginTop: 20 },
-  exerciseList: { marginTop: 10 },
-  card: {
-    backgroundColor: "#fff",
-    borderRadius: 12,
-    padding: 15,
-    marginBottom: 10,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 3,
-    elevation: 2,
-    borderLeftWidth: 5,
-    borderLeftColor: "#63B3ED",
-  },
-  exerciseName: { fontSize: 18, fontWeight: "700", color: "#2D3748" },
-  exerciseInfo: { color: "#4A5568", marginTop: 4 },
-  dateText: { color: "#718096", fontSize: 12, marginTop: 6 },
-  emptyText: { textAlign: "center", color: "#718096", fontSize: 16, marginTop: 20 },
-});

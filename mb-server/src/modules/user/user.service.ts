@@ -101,15 +101,15 @@ export class UserService {
         let message = '';
         const BMI = caculateBmi(user.profile?.height as number, user.profile?.weight as number);
         if (BMI < 18.5) {
-            message = 'Thiếu cân';
+            message = 'Underweight';
         } else if (BMI >= 18.5 && BMI < 22.9){
-            message = 'Bình thường';
+            message = 'Normal weight';
         } else if (BMI >= 23 && BMI < 24.9) {
-            message = 'Thừa cân';
+            message = 'Overweight';
         } else if (BMI >= 25 && BMI < 29.9) {
-            message = 'Béo phì độ I';
+            message = 'Obesity level I';
         } else {
-            message = 'Béo phì độ II';
+            message = 'Obesity level II';
         }
         return {
             bmi: BMI,

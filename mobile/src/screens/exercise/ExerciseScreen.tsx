@@ -143,7 +143,7 @@ export default function ExerciseScreen() {
               textAlign: "center",
               color: "#1E88E5",
               fontWeight: "bold",
-              position: "absolute",
+              // position: "absolute",
               left: 0,
               right: 0,
               top: 0,
@@ -151,13 +151,13 @@ export default function ExerciseScreen() {
           >
             Danh sách bài tập
           </Text>
-          <Button
+          {/* <Button
                     icon="arrow-left"
                     mode="text"
                     onPress={() => navigation.goBack()}
                     textColor="#1E88E5"
                     style={{ alignSelf: "flex-start" }} children={undefined}  
-            />
+            /> */}
         </View>
 
         {/* Hiển thị/ẩn bộ lọc */}

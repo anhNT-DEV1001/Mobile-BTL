@@ -23,11 +23,9 @@ export default function WorkoutMainLayout() {
 
     if (selectedRoute === "index") {
       router.push("/workout");
-    } else if (selectedRoute === "exercise") {
-      router.push("/(app)/exercise");
+    } else if (selectedRoute === "workout") {
+      router.push("/(app)/workout/workoutInclude");
     } else if (selectedRoute === "stats") {
-      router.push("/(app)");
-    } else if (selectedRoute === "profile") {
       router.push("/(app)");
     } else {
       // fallback to base workout route if an unknown key appears

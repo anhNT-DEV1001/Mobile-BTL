@@ -82,6 +82,76 @@ export function caculateBmrAndTdee(height: number, weight: number, dob: Date, ge
     };
 }
 
+
+export function calculate1RM(weight: number, reps: number): number {
+    if (reps === 1) return weight;
+    if (reps > 12) return weight; // Công thức không chính xác với reps > 12
+    
+    // Công thức Brzycki: 1RM = weight / (1.0278 - 0.0278 * reps)
+    const oneRM = weight / (1.0278 - 0.0278 * reps);
+    return Math.round(oneRM * 10) / 10; // Làm tròn đến 1 chữ số thập phân
+}
+
+
+export function adjustOneRMByAge(oneRM: number, age: number): number {
+    // Hệ số điều chỉnh theo tuổi (đơn giản hóa)
+    let ageFactor = 1.0;
+    
+    if (age < 20) ageFactor = 0.95;
+    else if (age >= 20 && age <= 30) ageFactor = 1.0;
+    else if (age > 30 && age <= 40) ageFactor = 0.98;
+    else if (age > 40 && age <= 50) ageFactor = 0.95;
+    else if (age > 50) ageFactor = 0.90;
+    
+    return Math.round(oneRM * ageFactor * 10) / 10;
+}
+
+
+export function calculateStrengthLevel(
+    weight: number, 
+    reps: number, 
+    bodyWeight: number, 
+    age: number, 
+    gender: UserGender
+): WorkOutLevel {
+    // Bước 1: Tính 1RM
+    const oneRM = calculate1RM(weight, reps);
+    
+    // Bước 2: Điều chỉnh theo tuổi
+    const adjustedOneRM = adjustOneRMByAge(oneRM, age);
+    
+    // Bước 3: Tính tỷ lệ so với cân nặng cơ thể
+    const strengthRatio = adjustedOneRM / bodyWeight;
+    
+    // Bước 4: Áp dụng hệ số giới tính
+    const genderFactor = gender === UserGender.MALE ? 1.0 : 1 / WorkOutGenderFactor;
+    const adjustedRatio = strengthRatio * genderFactor;
+    
+    // Bước 5: Xác định strength level dựa trên tỷ lệ
+    // Các ngưỡng này có thể điều chỉnh dựa trên loại bài tập cụ thể
+    if (adjustedRatio < 0.5) return WorkOutLevel.BEGINNER;      // < 50% body weight
+    if (adjustedRatio < 0.75) return WorkOutLevel.NOVICE;       // 50-75% body weight
+    if (adjustedRatio < 1.0) return WorkOutLevel.INTERMEDIATE;  // 75-100% body weight
+    if (adjustedRatio < 1.5) return WorkOutLevel.ADVANCED;      // 100-150% body weight
+    return WorkOutLevel.GYMLORD;                                 // > 150% body weight
+}
+
+
+export function calculateSetStrengthLevel(
+    setData: { weight: number; reps: number },
+    userProfile: { weight: number; height: number; dob: Date; gender: UserGender }
+): string {
+    const age = Number(caculateAge(userProfile.dob));
+    
+    return calculateStrengthLevel(
+        setData.weight,
+        setData.reps,
+        userProfile.weight,
+        age,
+        userProfile.gender
+    );
+}
+
 // export function caculateWorkoutLevel(data : any) {
     
 // }

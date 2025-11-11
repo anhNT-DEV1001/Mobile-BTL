@@ -8,12 +8,30 @@ import { CreateWorkoutDto, UpdateWorkoutDto } from './dto/req/workout.request';
 import { BearerType } from 'src/common/enums';
 import { CreateUserExerciseDto, UpdateUserExerciseDto } from './dto/req/user-exercise.request';
 import { CreateWorkoutTemplateDto, UpdateWorkoutTemplateDto } from './dto/req/workout-template.request';
+import { CalculateStrengthLevelDto } from './dto/req/strength-level.request';
+import { StrengthLevelResponse } from './dto/res/strength-level.response';
 
 @ApiTags('Workouts')
 @ApiBearerAuth(BearerType.AccessToken)
 @Controller('workout')
 export class WorkoutController {
     constructor(private workoutService: WorkoutService) { }
+
+    // ==================== UTILITY ENDPOINTS ====================
+
+    @Post('calculate-strength-level')
+    @ApiResponse({ status: 200, type: StrengthLevelResponse })
+    async calculateStrengthLevel(
+        @Body() dto: CalculateStrengthLevelDto,
+        @CurrentUser() user
+    ): Promise<BaseResponse<StrengthLevelResponse>> {
+        const res = await this.workoutService.calculateStrengthLevelForSet(dto, user);
+        return {
+            status: 'success',
+            message: 'Tính toán strength level thành công!',
+            data: res
+        }
+    }
 
     // ==================== WORKOUT ENDPOINTS ====================
 

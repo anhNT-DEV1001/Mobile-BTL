@@ -13,6 +13,9 @@ import { WorkOutTemplate, WorkOutTemplateDocument } from './schema/workout-templ
 import { UserExercise, UserExerciseDocument } from './schema/user-exercise.schema';
 import { CreateUserExerciseDto, UpdateUserExerciseDto } from './dto/req/user-exercise.request';
 import { CreateWorkoutTemplateDto, UpdateWorkoutTemplateDto } from './dto/req/workout-template.request';
+import { CalculateStrengthLevelDto } from './dto/req/strength-level.request';
+import { StrengthLevelResponse } from './dto/res/strength-level.response';
+import { calculate1RM, adjustOneRMByAge, caculateAge } from 'src/common/utils';
 
 @Injectable()
 export class WorkoutService {
@@ -397,5 +400,58 @@ export class WorkoutService {
         }
 
         return { workout, exercises: userExercises };
+    }
+
+    /**
+     * Tính toán strength level chi tiết cho một set
+     */
+    async calculateStrengthLevelForSet(
+        dto: CalculateStrengthLevelDto,
+        user: UserResponse
+    ): Promise<StrengthLevelResponse> {
+        // Kiểm tra thông tin user
+        const userDoc = await this.userModel.findById(user.id);
+        if (!userDoc || !userDoc.profile) {
+            throw new ApiError("Vui lòng cập nhật thông tin cá nhân trước!", HttpStatus.BAD_REQUEST);
+        }
+
+        const { weight, height, dob, gender } = userDoc.profile;
+        const age = Number(caculateAge(dob));
+
+        // Bước 1: Tính 1RM
+        const estimatedOneRM = calculate1RM(dto.weight, dto.reps);
+
+        // Bước 2: Điều chỉnh theo tuổi
+        const adjustedOneRM = adjustOneRMByAge(estimatedOneRM, age);
+
+        // Bước 3: Tính tỷ lệ so với cân nặng
+        const strengthRatio = adjustedOneRM / weight;
+
+        // Bước 4: Áp dụng hệ số giới tính và tính level
+        const level = calculateSetStrengthLevel(
+            { weight: dto.weight, reps: dto.reps },
+            { weight, height, dob, gender }
+        );
+
+        // Tính percentile ước tính dựa trên strength ratio
+        // Công thức đơn giản: sử dụng cumulative distribution
+        const percentileByAge = Math.min(100, Math.round(strengthRatio * 50)); // Ước tính
+        const percentileByWeight = Math.min(100, Math.round(strengthRatio * 40)); // Ước tính
+
+        return {
+            level,
+            estimatedOneRM: Math.round(estimatedOneRM * 10) / 10,
+            adjustedOneRM: Math.round(adjustedOneRM * 10) / 10,
+            strengthRatio: Math.round(strengthRatio * 100) / 100,
+            percentileByAge,
+            percentileByWeight,
+            details: {
+                weight: dto.weight,
+                reps: dto.reps,
+                bodyWeight: weight,
+                age,
+                gender
+            }
+        };
     }
 }

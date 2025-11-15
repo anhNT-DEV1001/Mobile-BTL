@@ -1,28 +1,67 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { WorkOutLevel, WorkoutStatus } from "src/common/enums";
 import { Metadata } from "src/common/metadata";
 
 export class WorkoutResponse extends Metadata {
     @ApiProperty()
     id: string;
+    
     @ApiProperty()
     name: string;
+    
     @ApiProperty()
-    exersie: string;
+    date: Date;
+    
     @ApiProperty()
-    weight: number;
+    note?: string;
+}
+
+export class ExerciseSetResponse {
     @ApiProperty()
     reps: number;
+    
     @ApiProperty()
-    sets: number;
+    weight?: number;
+    
     @ApiProperty()
-    break: number;
+    level?: string | null;
+}
+
+export class UserExerciseResponse extends Metadata {
     @ApiProperty()
-    rest: number;
+    id: string;
+    
     @ApiProperty()
-    userLevel: WorkOutLevel;
+    exercise: any; // Có thể populate thành Exercise object
+    
+    @ApiProperty()
+    workout: string;
+    
+    @ApiProperty({ type: [ExerciseSetResponse] })
+    sets: ExerciseSetResponse[];
+    
+    @ApiProperty()
+    totalVolume?: number;
+    
+    @ApiProperty()
+    note?: string;
+}
+
+export class WorkoutTemplateResponse extends Metadata {
+    @ApiProperty()
+    id: string;
+    
+    @ApiProperty()
+    name: string;
+    
+    @ApiProperty()
+    exercises: any[]; // Có thể populate thành Exercise objects
+    
+    @ApiProperty()
+    level?: string | null;
+    
+    @ApiProperty()
+    type?: string | null;
+    
     @ApiProperty()
     note?: string | null;
-    @ApiProperty()
-    status: WorkoutStatus;
 }

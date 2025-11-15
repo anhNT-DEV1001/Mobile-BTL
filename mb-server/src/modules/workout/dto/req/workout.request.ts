@@ -1,65 +1,34 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { IsNotEmpty, IsNumber, IsOptional, MaxLength } from "class-validator";
-import { WorkOutLevel, WorkoutStatus } from "src/common/enums";
+import { IsDateString, IsNotEmpty, IsOptional, MaxLength } from "class-validator";
 
 export class CreateWorkoutDto {
-    @ApiProperty()
+    @ApiProperty({ description: 'Tên buổi tập', example: 'Morning Workout', required: false })
     @IsOptional()
-    @MaxLength(50, { message: 'Tên không được quá 50 ký tự !' })
+    @MaxLength(100, { message: 'Tên không được quá 100 ký tự!' })
     name?: string;
-    @ApiProperty()
-    @IsNotEmpty({ message: 'Vui lòng chọn bài tập !' })
-    exersie: string;
-    @ApiProperty()
-    @IsNumber({}, { message: 'Vui lòng nhập mức tạ!' })
-    weight: number;
-    @ApiProperty()
-    @IsNumber({}, { message: 'Vui lòng nhập số reps!' })
-    reps: number;
-    @ApiProperty()
-    @IsNumber({}, { message: 'Vui lòng nhập số sets!' })
-    sets: number;
-    @ApiProperty()
-    @IsNumber({}, { message: 'Vui lòng nhập số lượt nghỉ mỗi set!' })
-    break: number;
-    @ApiProperty()
-    @IsNumber({}, { message: 'Vui lòng nhập thời thời gian nghỉ !' })
-    rest: number;
-    @ApiProperty()
+
+    @ApiProperty({ description: 'Ngày tập', example: '2025-01-15' })
+    @IsNotEmpty({ message: 'Vui lòng chọn ngày tập!' })
+    @IsDateString({}, { message: 'Ngày tập không hợp lệ!' })
+    date: Date;
+
+    @ApiProperty({ description: 'Ghi chú', required: false })
     @IsOptional()
-    note?: string | null;
+    note?: string;
 }
 
 export class UpdateWorkoutDto {
-    @ApiProperty()
+    @ApiProperty({ description: 'Tên buổi tập', required: false })
     @IsOptional()
-    @MaxLength(50, { message: 'Tên không được quá 50 ký tự !' })
+    @MaxLength(100, { message: 'Tên không được quá 100 ký tự!' })
     name?: string;
-    @ApiProperty()
-    @IsNotEmpty({ message: 'Vui lòng chọn bài tập !' })
-    exersie: string;
-    @ApiProperty()
-    @IsNumber({}, { message: 'Vui lòng nhập mức tạ!' })
-    weight: number;
-    @ApiProperty()
-    @IsNumber({}, { message: 'Vui lòng nhập số reps!' })
-    reps: number;
-    @ApiProperty()
-    @IsNumber({}, { message: 'Vui lòng nhập số sets!' })
-    sets: number;
-    @ApiProperty()
-    @IsNumber({}, { message: 'Vui lòng nhập số lượt nghỉ mỗi set!' })
-    break: number;
-    @ApiProperty()
-    @IsNumber({}, { message: 'Vui lòng nhập thời thời gian nghỉ !' })
-    rest: number;
-    @ApiProperty()
+
+    @ApiProperty({ description: 'Ngày tập', required: false })
     @IsOptional()
-    note?: string | null;
-    @ApiProperty()
+    @IsDateString({}, { message: 'Ngày tập không hợp lệ!' })
+    date?: Date;
+
+    @ApiProperty({ description: 'Ghi chú', required: false })
     @IsOptional()
-    userLevel: WorkOutLevel;
-    @ApiProperty()
-    @IsOptional()
-    status: WorkoutStatus;
+    note?: string;
 }

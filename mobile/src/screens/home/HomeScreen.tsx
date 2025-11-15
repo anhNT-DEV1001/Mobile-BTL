@@ -66,7 +66,7 @@ export default function HomeScreen() {
             </Surface>
 
             {/* Profile Section */}
-            {/* <Card style={styles.profileCard} elevation={1}>
+            <Card style={styles.profileCard} elevation={1}>
                 <Card.Content style={styles.profileContent}>
                     <Avatar.Image 
                         size={100}
@@ -75,33 +75,15 @@ export default function HomeScreen() {
                     <Text variant="headlineMedium" style={styles.username}>
                         {currentUser?.profile?.name || "Unknown User"}
                     </Text>
-                    <Text style={styles.statLabel}>WORKOUTS</Text>
-                </View>
-            </View>
-
-            <Surface style={styles.powerSection} elevation={1}>
-                <Text style={styles.powerTitle}>Power Level</Text>
-                <Button mode="contained" style={styles.unknownButton}>
-                    {userWorkoutLevel.data?.data || ""}
-                </Button>
-            </Surface>
-
-            <View style={styles.menuGrid}>
-                <TouchableOpacity 
-                style={styles.menuItem}
-                onPress={() => router.push('/workout')}
-                >
-                    <MaterialCommunityIcons name="dumbbell" size={24} color="black" />
-                    <Text style={styles.menuText}>Workouts</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                    style={styles.menuItem}
-                    onPress={() => router.push('/exercise')}
+                    <Chip 
+                        mode="outlined" 
+                        icon="human-male"
+                        style={styles.genderChip}
                     >
                         Male
                     </Chip>
                 </Card.Content>
-            </Card> */}
+            </Card>
 
             {/* Stats & Power Level Card */}
             <Card style={styles.statsCard} elevation={1}>
@@ -219,6 +201,7 @@ const styles = StyleSheet.create({
     },
     statsCard: {
         marginHorizontal: 16,
+        marginTop: 12,
         marginBottom: 12,
         backgroundColor: 'white',
     },

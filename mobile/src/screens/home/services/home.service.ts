@@ -15,10 +15,19 @@ export const updateUserProfile = async (userId: string, data: any): Promise<Base
 };
 
 /**
- * 
+ * Get user workout level
  * @returns string
  */
 export const getUserWorkoutLevel = async() => {
     const res = await api.get('/workout/level');
+    return res.data;
+}
+
+/**
+ * Get user BMI level
+ * @returns object with bmi number and message string
+ */
+export const getUserBmiLevel = async(): Promise<BaseResponse<{ bmi: number; message: string }>> => {
+    const res = await api.get('/user/bmi');
     return res.data;
 }

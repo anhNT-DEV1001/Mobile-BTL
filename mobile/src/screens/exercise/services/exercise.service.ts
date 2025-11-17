@@ -51,3 +51,5 @@ export const deleteExercise = async (id: string) : Promise<Exercise> => {
   const res = await api.delete('/exercises/${id}');
   return res.data;
 }
+
+//api add exercise to workout(post)

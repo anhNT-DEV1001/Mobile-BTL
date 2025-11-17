@@ -547,6 +547,7 @@ export default function ExerciseScreen() {
               <ScrollView>
                 {selectedExercise && (
                   <>
+                  {/* thêm toggle on/off để call đến api thêm bài tập vào workout */}
                     <Text
                       style={{
                         fontSize: 22,

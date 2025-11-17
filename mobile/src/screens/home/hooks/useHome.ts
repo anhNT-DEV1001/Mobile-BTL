@@ -1,5 +1,5 @@
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { getUserWorkouts, updateUserProfile, getUserWorkoutLevel } from '../services/home.service';
+import { getUserWorkouts, updateUserProfile, getUserBmiLevel } from '../services/home.service';
 import { User } from "@/src/common/types/auth.type";
 
 export function useHome() {
@@ -15,18 +15,19 @@ export function useHome() {
             updateUserProfile(userId, data)
     });
 
-    const userWorkoutLevel = useQuery({
-        queryKey : ['user-workouts-level'],
-        queryFn : getUserWorkoutLevel
-    })
+    // Query để lấy BMI level
+    const userBmiLevel = useQuery({
+        queryKey: ['user-bmi-level'],
+        queryFn: getUserBmiLevel
+    });
 
     return {
         workoutsQuery,
-        userWorkoutLevel,
+        userBmiLevel,
         updateProfileMutation,
         isLoading: workoutsQuery.isLoading,
         isError: workoutsQuery.isError,
-        isErrorLevel: userWorkoutLevel.isLoading,
-        isLoadingLevel: userWorkoutLevel.isLoading
+        isErrorBmi: userBmiLevel.isError,
+        isLoadingBmi: userBmiLevel.isLoading
     };
 }

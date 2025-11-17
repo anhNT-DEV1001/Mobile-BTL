@@ -10,9 +10,9 @@ export default function RootLayout() {
   if (!hasHydrated) return null;
   return (
     <SafeAreaProvider>
-      {/* <PaperProvider> */}
+      <PaperProvider>
         <Slot />
-      {/* </PaperProvider> */}
+      </PaperProvider>
     </SafeAreaProvider>
   );
 }

@@ -1,5 +1,6 @@
 export enum WorkOutLevel {
     BEGINNER = 'beginner',
+    NOVICE = 'novice',
     INTERMEDIATE = 'intermediate',
     ADVANCED = 'advanced',
     GYMLORD = 'gym lord'

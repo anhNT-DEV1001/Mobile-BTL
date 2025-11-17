@@ -153,8 +153,8 @@ export default function RegisterProfileScreen() {
                     {/* Header Section */}
                     <View style={styles.header}>
                         <MaterialCommunityIcons name="account-details" size={50} color="#0096F3" />
-                        <Text style={styles.appName}>THÔNG TIN CÁ NHÂN</Text>
-                        <Text style={styles.headerSubtitle}>Bước cuối cùng!</Text>
+                        <Text style={styles.appName}>VAI LON</Text>
+                        <Text style={styles.headerSubtitle}>Điền thông tin cá nhân của bạn</Text>
                     </View>
 
                     {/* Progress Bar */}

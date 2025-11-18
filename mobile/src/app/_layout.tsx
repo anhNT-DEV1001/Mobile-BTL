@@ -26,11 +26,7 @@ export default function RootLayout() {
   if (!hasHydrated) return null;
   return (
     <SafeAreaProvider>
-<<<<<<< HEAD
-      <PaperProvider>
-=======
       <PaperProvider theme={theme}>
->>>>>>> 263cd9eaf7bedbdb8782a17fde89eee3cac21258
         <Slot />
       </PaperProvider>
     </SafeAreaProvider>

@@ -1,4 +1,4 @@
-import { View, StyleSheet, ScrollView } from "react-native";
+import { View, StyleSheet, ScrollView, Pressable } from "react-native";
 import { Button, Text, Avatar, Surface, Card, Chip, IconButton } from "react-native-paper";
 import { useAuth } from "../auth/hooks/useAuth";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
@@ -65,11 +65,8 @@ export default function HomeScreen() {
         return level;
     };
 
-    // Get color based on star count
-    // 4 stars = Green (healthy), 3 = Yellow, 2 = Orange (warning), 1 = Red (danger)
     const getStarColor = (currentIndex: number, totalStars: number): string => {
         if (currentIndex <= totalStars) {
-            // Filled stars - color based on total stars rating
             if (totalStars === 4) return '#4CAF50'; // Green - Excellent
             if (totalStars === 3) return '#FFC107'; // Amber/Yellow - Good
             if (totalStars === 2) return '#FF9800'; // Orange - Warning
@@ -80,11 +77,11 @@ export default function HomeScreen() {
     };
 
     const getBmiIconColor = (stars: number): string => {
-        if (stars === 4) return '#4CAF50'; // Green
-        if (stars === 3) return '#FFC107'; // Yellow
-        if (stars === 2) return '#FF9800'; // Orange
-        if (stars === 1) return '#F44336'; // Red
-        return '#9E9E9E'; // Gray for unknown
+        if (stars === 4) return '#4CAF50'; 
+        if (stars === 3) return '#FFC107'; 
+        if (stars === 2) return '#FF9800'; 
+        if (stars === 1) return '#F44336'; 
+        return '#9E9E9E'; 
     };
 
     // Parse BMI data from response
@@ -159,20 +156,32 @@ export default function HomeScreen() {
                 <Card.Content style={{ paddingVertical: 16 }}>
                     <View style={styles.statsRow}>
                         {/* Workouts Count */}
-                        <View style={styles.statItem}>
-                            <MaterialCommunityIcons name="dumbbell" size={28} color="#003366" />
+                        <Pressable 
+                            style={({ pressed }) => [
+                                styles.statItem,
+                                pressed && { opacity: 0.6 }
+                            ]}
+                            onPress={() => router.push("/(app)/workout")}
+                        >
+                            <MaterialCommunityIcons name="dumbbell" size={28} color="#003366"/>
                             <Text variant="displaySmall" style={styles.statNumber}>
                                 {isLoading ? '...' : workoutsQuery.data?.data?.length || 0}
                             </Text>
                             <Text variant="labelLarge" style={styles.statLabel}>
                                 WORKOUTS
                             </Text>
-                        </View>
+                        </Pressable>
 
                         <View style={[styles.divider, { height: 80 }]} />
 
                         {/* BMI Index with Stars Rating */}
-                        <View style={styles.statItem}>
+                        <Pressable
+                            style={({ pressed }) => [
+                                styles.statItem,
+                                pressed && { opacity: 0.6 }
+                            ]}
+                            onPress={() => router.push("/(app)/measurement")}
+                        >
                             <MaterialCommunityIcons 
                                 name="scale-bathroom" 
                                 size={28} 
@@ -201,7 +210,7 @@ export default function HomeScreen() {
                             <Text variant="labelLarge" style={styles.statLabel}>
                                 {levelLabel.toUpperCase()}
                             </Text>
-                        </View>
+                        </Pressable>
                     </View>
                 </Card.Content>
             </Card>

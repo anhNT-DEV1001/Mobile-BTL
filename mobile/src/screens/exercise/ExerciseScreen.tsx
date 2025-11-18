@@ -51,7 +51,7 @@ export default function ExerciseScreen() {
     limit: "10",
   });
 
-  const { getExercisesQuery } = useExercise(filters);
+  const { getExercisesQuery } = useExercise(filters as any);
   const [selectedExercise, setSelectedExercise] = useState<Exercise | null>(null);
   const [showModal, setShowModal] = useState(false);
   const [showFilters, setShowFilters] = useState(false);

@@ -2,8 +2,6 @@ import { Alert } from "react-native";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { getExercises, postExercise, patchExercise, deleteExercise, type ExerciseFilters, type Exercise } from "../services/exercise.service";
 
-
-
 export function useExercise(filters?: ExerciseFilters) {
   const getExercisesQuery = useQuery({
     queryKey: ["exercises", filters],

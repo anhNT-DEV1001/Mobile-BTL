@@ -38,7 +38,6 @@ export interface ExerciseListResponse {
   limit: number;
 }
 
-
 export const getExercises = async (filters?: ExerciseFilters): Promise<ExerciseListResponse> => {
   const response = await api.get('/exercises', { params: filters });
   return response.data.data;

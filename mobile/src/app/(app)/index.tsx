@@ -1,5 +1,5 @@
-import HomeScreen from '@/src/screens/home/HomeScreen';
+import HomeScreen from "@/src/screens/home/HomeScreen";
+
 export default function Index() {
     return <HomeScreen />;
-    
 }

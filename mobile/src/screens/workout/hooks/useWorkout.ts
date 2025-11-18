@@ -15,6 +15,7 @@ import {
   createWorkoutTemplate,
   updateWorkoutTemplate,
   deleteWorkoutTemplate,
+  calculateStrengthLevel,
   type Workout,
   type UserExercise,
   type WorkoutTemplate,
@@ -186,5 +187,15 @@ export const useDeleteWorkoutTemplate = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["workout-templates"] });
     },
+  });
+};
+
+// ==================== UTILITY HOOKS ====================
+
+// Hook để tính strength level
+export const useCalculateStrengthLevel = () => {
+  return useMutation({
+    mutationFn: ({ weight, reps }: { weight: number; reps: number }) =>
+      calculateStrengthLevel(weight, reps),
   });
 };

@@ -18,7 +18,6 @@ export default function WorkoutDetailScreen() {
     const { id } = useLocalSearchParams<{ id: string }>();
     const { data: workout, isLoading: workoutLoading } = useWorkout(id || '');
     const { data: exercises = [], isLoading: exercisesLoading } = useWorkoutExercises(id || '');
-    const { data: exerciseCatalog, isLoading: exerciseCatalogLoading } = useExercises({ limit: 100 });
     const deleteExerciseMutation = useDeleteUserExercise();
     const updateExerciseMutation = useUpdateUserExercise();
     const createExerciseMutation = useCreateUserExercise();
@@ -35,6 +34,47 @@ export default function WorkoutDetailScreen() {
     const [newExerciseSets, setNewExerciseSets] = useState<ExerciseSet[]>([{ reps: 10, weight: undefined, level: null }]);
     const [newExerciseNote, setNewExerciseNote] = useState('');
     const [searchQuery, setSearchQuery] = useState('');
+    
+    // Pagination states for exercise catalog
+    const [exercisePage, setExercisePage] = useState(1);
+    const [allExercises, setAllExercises] = useState<Exercise[]>([]);
+    const [hasMoreExercises, setHasMoreExercises] = useState(true);
+    
+    const { data: exerciseCatalog, isLoading: exerciseCatalogLoading, isFetching: exerciseCatalogFetching } = useExercises({ 
+        page: exercisePage, 
+        limit: 50,
+        q: searchQuery 
+    });
+
+    // Load and append exercises when catalog changes
+    useEffect(() => {
+        if (exerciseCatalog?.items) {
+            if (exercisePage === 1) {
+                // First page or search query changed - replace all
+                setAllExercises(exerciseCatalog.items);
+            } else {
+                // Append to existing exercises
+                setAllExercises(prev => {
+                    const existingIds = new Set(prev.map(ex => ex._id || ex.id));
+                    const newItems = exerciseCatalog.items.filter(
+                        ex => !existingIds.has(ex._id || ex.id)
+                    );
+                    return [...prev, ...newItems];
+                });
+            }
+            
+            // Check if there are more exercises to load
+            const { items, total } = exerciseCatalog;
+            setHasMoreExercises(allExercises.length + items.length < total);
+        }
+    }, [exerciseCatalog]);
+
+    // Reset pagination when search query changes
+    useEffect(() => {
+        setExercisePage(1);
+        setAllExercises([]);
+        setHasMoreExercises(true);
+    }, [searchQuery]);
 
     const isLoading = workoutLoading || exercisesLoading;
 
@@ -51,13 +91,18 @@ export default function WorkoutDetailScreen() {
     const workoutDate = new Date(workoutData.date);
 
     const handleAddExercise = () => {
-        if (!exerciseCatalog?.items?.length) {
-            Alert.alert('Notice', 'No exercises available. Please create some exercises first.');
-            return;
-        }
         setSearchQuery('');
         setSelectedExerciseId(null);
+        setExercisePage(1);
+        setAllExercises([]);
+        setHasMoreExercises(true);
         setShowExerciseSelectModal(true);
+    };
+
+    const handleLoadMoreExercises = () => {
+        if (!exerciseCatalogFetching && hasMoreExercises) {
+            setExercisePage(prev => prev + 1);
+        }
     };
 
     const handleSelectExerciseForAdd = (exercise: Exercise) => {
@@ -382,13 +427,11 @@ export default function WorkoutDetailScreen() {
                             style={styles.searchbar}
                         />
 
-                        {exerciseCatalogLoading ? (
+                        {exerciseCatalogLoading && exercisePage === 1 ? (
                             <ActivityIndicator size="large" color="#1976d2" style={styles.loading} />
                         ) : (
                             <FlatList
-                                data={exerciseCatalog?.items?.filter((exercise) =>
-                                    exercise.name.toLowerCase().includes(searchQuery.toLowerCase())
-                                ) || []}
+                                data={allExercises}
                                 keyExtractor={(item) => item._id || item.id}
                                 renderItem={({ item }) => (
                                     <TouchableOpacity
@@ -407,6 +450,20 @@ export default function WorkoutDetailScreen() {
                                     </TouchableOpacity>
                                 )}
                                 style={styles.exerciseList}
+                                onEndReached={handleLoadMoreExercises}
+                                onEndReachedThreshold={0.5}
+                                ListFooterComponent={
+                                    exerciseCatalogFetching && exercisePage > 1 ? (
+                                        <ActivityIndicator size="small" color="#1976d2" style={styles.loadingMore} />
+                                    ) : null
+                                }
+                                ListEmptyComponent={
+                                    !exerciseCatalogLoading ? (
+                                        <Text style={styles.exerciseCatalogEmptyText}>
+                                            {searchQuery ? 'No exercises found' : 'No exercises available'}
+                                        </Text>
+                                    ) : null
+                                }
                             />
                         )}
 
@@ -981,5 +1038,14 @@ const styles = StyleSheet.create({
         padding: 8,
         borderRadius: 6,
         marginBottom: 16,
+    },
+    loadingMore: {
+        paddingVertical: 16,
+    },
+    exerciseCatalogEmptyText: {
+        textAlign: 'center',
+        color: '#757575',
+        fontSize: 14,
+        paddingVertical: 24,
     },
 });

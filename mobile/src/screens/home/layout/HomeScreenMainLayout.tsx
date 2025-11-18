@@ -1,16 +1,13 @@
 import React from "react";
-import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
-import { Slot, useRouter } from "expo-router";
+import { View, StyleSheet } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { IconButton } from "react-native-paper";
 
-export default function HomeScreenMainLayout() {
+export default function HomeScreenMainLayout({ children }: { children: React.ReactNode }) {
   const insets = useSafeAreaInsets();
-  const router = useRouter();
   return(
     <View style={[styles.container, { paddingTop: insets.top }]}>
       <View style={styles.content}>
-        <Slot />
+        {children}
       </View>
     </View>
   )

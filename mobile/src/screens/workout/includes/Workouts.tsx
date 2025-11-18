@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -10,8 +10,16 @@ import {
 } from "react-native";
 import { Button, Card, FAB, IconButton, ActivityIndicator, Modal, Portal, TextInput } from "react-native-paper";
 import { Calendar, DateData } from "react-native-calendars";
-import { useWorkouts, useCreateWorkout, useDeleteWorkout, useWorkoutExercises, useCreateWorkoutFromTemplate, useWorkoutTemplates } from "../hooks/useWorkout";
+import { useWorkouts, useCreateWorkout, useDeleteWorkout, useWorkoutExercises, useCreateWorkoutFromTemplate, useWorkoutTemplates, useCalculateStrengthLevel } from "../hooks/useWorkout";
 import { useRouter } from "expo-router";
+import type { ExerciseSet } from "../services/workout.service";
+
+// Helper function to check if exercise requires weight
+const isWeightRequired = (equipment?: string): boolean => {
+  if (!equipment) return true; // Default to requiring weight if unknown
+  const noWeightEquipment = ['body only', 'foam roll', 'bands', 'other'];
+  return !noWeightEquipment.includes(equipment.toLowerCase());
+};
 
 export default function Workouts() {
   const router = useRouter();
@@ -250,6 +258,63 @@ export default function Workouts() {
 }
 
 // WorkoutCard Component
+// Helper function to get level color
+const getLevelColor = (level: string): string => {
+  const lowerLevel = level.toLowerCase();
+  switch (lowerLevel) {
+    case 'beginner':
+      return '#2196F3';
+    case 'novice':
+      return '#FF9800';
+    case 'intermediate':
+      return '#4CAF50';
+    case 'advanced':
+      return '#E91E63';
+    case 'gymlord':
+    case 'gym lord':
+      return '#9C27B0';
+    default:
+      return '#757575';
+  }
+};
+
+// Component to display set with auto-calculated level
+function SetDisplay({ set, setIndex, equipment }: { set: ExerciseSet; setIndex: number; equipment?: string }) {
+  const [level, setLevel] = useState<string | null>(set.level || null);
+  const calculateLevelMutation = useCalculateStrengthLevel();
+  const showWeight = isWeightRequired(equipment);
+
+  useEffect(() => {
+    // Only calculate if level is missing but weight and reps exist and weight is required
+    if (showWeight && !set.level && set.weight && set.reps && set.weight > 0 && set.reps > 0) {
+      calculateLevelMutation.mutateAsync({
+        weight: set.weight,
+        reps: set.reps,
+      }).then((result) => {
+        setLevel(result.level || null);
+      }).catch((error) => {
+        console.error('Failed to calculate level:', error);
+      });
+    }
+  }, [set.weight, set.reps, set.level, showWeight]);
+
+  const displayLevel = level || set.level;
+
+  return (
+    <View style={styles.setRow}>
+      <Text style={styles.setText}>
+        Set {setIndex + 1}: {set.reps} reps
+        {showWeight && set.weight ? ` × ${set.weight}kg` : ""}
+      </Text>
+      {showWeight && displayLevel && (
+        <Text style={[styles.levelBadge, { color: getLevelColor(displayLevel) }]}>
+          {displayLevel.toUpperCase()}
+        </Text>
+      )}
+    </View>
+  );
+}
+
 interface WorkoutCardProps {
   workout: any;
   onPress: () => void;
@@ -291,12 +356,13 @@ function WorkoutCard({ workout, onPress, onDelete }: WorkoutCardProps) {
                   {index + 1}. {exercise.exercise?.name || "Exercise"}
                 </Text>
                 <View style={styles.setsContainer}>
-                  {exercise.sets.map((set: any, setIndex: number) => (
-                    <Text key={setIndex} style={styles.setText}>
-                      Set {setIndex + 1}: {set.reps} reps
-                      {set.weight ? ` × ${set.weight}kg` : ""}
-                      {set.level ? ` (${set.level})` : ""}
-                    </Text>
+                  {exercise.sets.map((set: ExerciseSet, setIndex: number) => (
+                    <SetDisplay 
+                      key={setIndex} 
+                      set={set} 
+                      setIndex={setIndex}
+                      equipment={exercise.exercise?.equipment}
+                    />
                   ))}
                 </View>
               </View>
@@ -413,10 +479,30 @@ const styles = StyleSheet.create({
   setsContainer: {
     marginLeft: 12,
   },
+  setRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 6,
+    paddingVertical: 4,
+    gap: 8,
+  },
   setText: {
     fontSize: 13,
     color: "#666",
-    marginBottom: 2,
+    flex: 1,
+    flexShrink: 1,
+  },
+  levelBadge: {
+    fontSize: 10,
+    fontWeight: 'bold',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 4,
+    backgroundColor: 'rgba(0,0,0,0.05)',
+    minWidth: 100,
+    textAlign: 'center',
+    flexShrink: 0,
   },
   noExercisesText: {
     fontSize: 13,

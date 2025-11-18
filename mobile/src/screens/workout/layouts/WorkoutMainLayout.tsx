@@ -1,85 +1,82 @@
 import React, { useState } from "react";
 import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { BottomNavigation, IconButton } from "react-native-paper";
-import { Slot, useRouter, useSegments } from "expo-router";
+import { IconButton } from "react-native-paper";
+import { useRouter } from "expo-router";
+import Workouts from "../includes/Workouts";
+import Templates from "../includes/Templates";
+
+type ViewMode = "workouts" | "templates";
 
 export default function WorkoutMainLayout() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
-  const segments = useSegments();
-
-  const [index, setIndex] = useState(0);
-  const [routes] = useState([
-    { key: "index", title: "Template", focusedIcon: "menu" },
-    { key: "workout", title: "Workout", focusedIcon: "dumbbell" },
-    { key: "stats", title: "Statistc", focusedIcon: "chart-line" },
-    { key: "schedule", title: "Schedule", focusedIcon: "calendar" },
-  ]);
-
-  const handleNavigate = (newIndex: number) => {
-    setIndex(newIndex);
-    const selectedRoute = routes[newIndex].key;
-
-    if (selectedRoute === "index") {
-      router.push("/workout");
-    } else if (selectedRoute === "workout") {
-      router.push("/(app)/workout/workoutInclude");
-    } else if (selectedRoute === "stats") {
-      router.push("/(app)");
-    } else {
-      // fallback to base workout route if an unknown key appears
-      router.push("/workout");
-    }
-  };
+  const [viewMode, setViewMode] = useState<ViewMode>("workouts");
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
-      {/* Header */}
-      
+      {/* Header - tương tự như measurement */}
       <View style={styles.header}>
         <View style={styles.headerLeft}>
-              <IconButton
-                icon="arrow-left"
-                iconColor="white"
-                size={24}
-                onPress={() => router.back()}
-              />
+          <IconButton
+            icon="arrow-left"
+            iconColor="white"
+            size={24}
+            onPress={() => router.push("/(app)")}
+          />
           <Text style={styles.headerTitle}>Workout</Text>
         </View>
-        
-        <View style={styles.headerRight}>
-          <TouchableOpacity
-            onPress={() => router.push("/")}
-          >
-            <Text style={styles.headerAction}>Add Template</Text>
-          </TouchableOpacity>
-        </View>
       </View>
 
-      {/* Nội dung con */}
+      {/* Content */}
       <View style={styles.content}>
-        <Slot />
+        {viewMode === "workouts" ? <Workouts /> : <Templates />}
       </View>
 
-      {/* Bottom Navigation */}
-      <BottomNavigation
-        navigationState={{ index, routes }}
-        onIndexChange={handleNavigate}
-        renderScene={() => null}
-        activeColor="#ffffff"
-        inactiveColor="#cccccc"
-        barStyle={{
-          backgroundColor: "#003366",
-          paddingBottom: insets.bottom,
-        }}
-      />
+      {/* Footer - Tab Navigation */}
+      <View style={styles.footer}>
+        <TouchableOpacity
+          style={[
+            styles.footerTab,
+            viewMode === "workouts" && styles.footerTabActive,
+          ]}
+          onPress={() => setViewMode("workouts")}
+        >
+          <Text
+            style={[
+              styles.footerTabText,
+              viewMode === "workouts" && styles.footerTabTextActive,
+            ]}
+          >
+            My Workouts
+          </Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={[
+            styles.footerTab,
+            viewMode === "templates" && styles.footerTabActive,
+          ]}
+          onPress={() => setViewMode("templates")}
+        >
+          <Text
+            style={[
+              styles.footerTabText,
+              viewMode === "templates" && styles.footerTabTextActive,
+            ]}
+          >
+            My Templates
+          </Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#003366" },
+  container: {
+    flex: 1,
+    backgroundColor: "#003366",
+  },
   header: {
     height: 56,
     backgroundColor: "#003366",
@@ -92,8 +89,44 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
   },
-  headerTitle: { color: "white", fontSize: 18, fontWeight: "700" },
-  headerRight: { flexDirection: "row", alignItems: "center" },
-  headerAction: { color: "white", marginLeft: 12 },
-  content: { flex: 1 },
+  headerTitle: {
+    color: "white",
+    fontSize: 18,
+    fontWeight: "700",
+  },
+  content: {
+    flex: 1,
+    backgroundColor: "#f5f5f5",
+  },
+  footer: {
+    height: 56,
+    backgroundColor: "#ffffff",
+    flexDirection: "row",
+    borderTopWidth: 1,
+    borderTopColor: "#e0e0e0",
+    elevation: 4,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: -2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+  },
+  footerTab: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    paddingVertical: 8,
+  },
+  footerTabActive: {
+    borderBottomWidth: 3,
+    borderBottomColor: "#003366",
+  },
+  footerTabText: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: "#757575",
+  },
+  footerTabTextActive: {
+    color: "#003366",
+    fontWeight: "700",
+  },
 });

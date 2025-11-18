@@ -1,10 +1,7 @@
-import { API_URL } from "../../../config";
-import {api} from '../../../common/apis';
+import { api } from "../../../common/apis";
+
 export interface Exercise {
-  instructions: any;
-  gif: string | undefined;
-  data: any;
-  status: string;
+  _id: string;
   id: string;
   name: string;
   category?: string;
@@ -14,12 +11,14 @@ export interface Exercise {
   mechanic?: string;
   primaryMuscles?: string[];
   secondaryMuscles?: string[];
+  instructions?: string[];
   images?: string[];
+  gif?: string;
   createdAt?: string;
   updatedAt?: string;
 }
 
-interface Filters {
+export interface ExerciseFilters {
   q?: string;
   force?: string;
   level?: string;
@@ -28,26 +27,33 @@ interface Filters {
   primaryMuscles?: string;
   category?: string;
   sort?: string;
-  page?: string;
-  limit?: string;
+  page?: number;
+  limit?: number;
 }
 
-export const getExercises = async (payload : Filters) : Promise<Exercise[]> => {
-    const res = await api.get('/exercises', { params: payload });
-    return res.data;
+export interface ExerciseListResponse {
+  items: Exercise[];
+  total: number;
+  page: number;
+  limit: number;
 }
 
-export const postExercise = async (payload : Exercise) : Promise<Exercise> => {
-    const res = await api.post('/exercises', payload);
-    return res.data;
-}
+export const getExercises = async (filters?: ExerciseFilters): Promise<ExerciseListResponse> => {
+  const response = await api.get('/exercises', { params: filters });
+  return response.data.data;
+};
 
-export const patchExercise = async (id: string, payload : Partial<Exercise>) : Promise<Exercise> => {
-  const res = await api.patch('/exercises/${id}', payload)
-  return res.data;
-}
+export const postExercise = async (payload: Partial<Exercise>): Promise<Exercise> => {
+  const response = await api.post('/exercises', payload);
+  return response.data.data;
+};
 
-export const deleteExercise = async (id: string) : Promise<Exercise> => {
-  const res = await api.delete('/exercises/${id}');
-  return res.data;
-}
+export const patchExercise = async (id: string, payload: Partial<Exercise>): Promise<Exercise> => {
+  const response = await api.patch(`/exercises/${id}`, payload);
+  return response.data.data;
+};
+
+export const deleteExercise = async (id: string): Promise<Exercise> => {
+  const response = await api.delete(`/exercises/${id}`);
+  return response.data.data;
+};

@@ -5,6 +5,7 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useHome } from "./hooks/useHome";
 import { useAuthStore } from "@/src/common/stores";
 import { useNavigation } from "@react-navigation/native";
+import { router } from "expo-router";
 
 // Helper component for stat items
 const StatItem = ({ icon, value, label, iconColor = "#003366", valueStyle = {} }: {
@@ -207,7 +208,7 @@ export default function HomeScreen() {
 
             {/* Menu Grid */}
             <View style={styles.menuContainer}>
-                <Card style={styles.menuCard} elevation={1}>
+                <Card onPress={() => router.push("/(app)/workout")} style={styles.menuCard} elevation={1}>
                     <Card.Content style={styles.menuItem}>
                         <MaterialCommunityIcons name="dumbbell" size={32} color="#003366" />
                         <Text variant="titleMedium" style={styles.menuText}>
@@ -219,7 +220,7 @@ export default function HomeScreen() {
                 <Card 
                     style={styles.menuCard} 
                     elevation={1}
-                    onPress={() => navigation.navigate("exercise" as never)}
+                    onPress={() => router.push("/(app)/exercise")}
                 >
                     <Card.Content style={styles.menuItem}>
                         <MaterialCommunityIcons name="clipboard-list" size={32} color="#003366" />
@@ -229,7 +230,7 @@ export default function HomeScreen() {
                     </Card.Content>
                 </Card>
 
-                <Card style={styles.menuCard} elevation={1}>
+                <Card onPress={() => router.push("/(app)/measurement")} style={styles.menuCard} elevation={1}>
                     <Card.Content style={styles.menuItem}>
                         <MaterialCommunityIcons name="tape-measure" size={32} color="#003366" />
                         <Text variant="titleMedium" style={styles.menuText}>

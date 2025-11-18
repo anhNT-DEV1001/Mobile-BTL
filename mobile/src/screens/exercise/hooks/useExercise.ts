@@ -1,42 +1,11 @@
 import { Alert } from "react-native";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { API_URL } from "../../../config";
-import { useEffect } from "react";
-import { getExercises , postExercise , patchExercise , deleteExercise } from "../services/exercise.service";
+import { getExercises, postExercise, patchExercise, deleteExercise, type ExerciseFilters, type Exercise } from "../services/exercise.service";
 
-export interface Exercise {
-  id: string;
-  name: string;
-  description?: string;
-  category?: string;
-  level?: string;
-  force?: string;
-  equipment?: string;
-  mechanic?: string;
-  primaryMuscles?: string[];
-  secondaryMuscles?: string[];
-  images?: string[];
-  createdAt?: string;
-  updatedAt?: string;
-}
-
-interface Filters {
-  q?: string;
-  force?: string;
-  level?: string;
-  mechanic?: string;
-  equipment?: string;
-  primaryMuscles?: string;
-  category?: string;
-  sort?: string;
-  page?: string;
-  limit?: string;
-}
-
-export function useExercise(filters: Filters) {
+export function useExercise(filters?: ExerciseFilters) {
   const getExercisesQuery = useQuery({
-    queryKey: ["exercises" , filters],
-    queryFn : async () => await getExercises(filters)
+    queryKey: ["exercises", filters],
+    queryFn: async () => await getExercises(filters)
   });
 
   const postExerciseMutation = useMutation({
@@ -78,4 +47,12 @@ export function useExercise(filters: Filters) {
     exercises,
   };
 }
+
+// Simplified hook to just get exercises
+export const useExercises = (filters?: ExerciseFilters) => {
+  return useQuery({
+    queryKey: ["exercises", filters],
+    queryFn: () => getExercises(filters),
+  });
+};
 

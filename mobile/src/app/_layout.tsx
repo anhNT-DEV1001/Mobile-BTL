@@ -1,7 +1,23 @@
 import { Slot } from "expo-router";
 import { useAuthStore, useIsLoggedIn } from "../common/stores";
 import { SafeAreaProvider } from "react-native-safe-area-context";
-import { PaperProvider } from "react-native-paper";
+import { PaperProvider, MD3LightTheme } from "react-native-paper";
+
+const theme = {
+  ...MD3LightTheme,
+  colors: {
+    ...MD3LightTheme.colors,
+    primary: '#1976d2',
+    secondary: '#424242',
+    background: '#ffffff',
+    surface: '#ffffff',
+    error: '#d32f2f',
+    onPrimary: '#ffffff',
+    onSecondary: '#ffffff',
+    onBackground: '#212121',
+    onSurface: '#212121',
+  },
+};
 
 export default function RootLayout() {
   const isLogin = useIsLoggedIn();
@@ -10,7 +26,7 @@ export default function RootLayout() {
   if (!hasHydrated) return null;
   return (
     <SafeAreaProvider>
-      <PaperProvider>
+      <PaperProvider theme={theme}>
         <Slot />
       </PaperProvider>
     </SafeAreaProvider>

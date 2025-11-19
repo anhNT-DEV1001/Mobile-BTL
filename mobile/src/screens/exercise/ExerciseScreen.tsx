@@ -51,7 +51,13 @@ export default function ExerciseScreen() {
     limit: "10",
   });
 
-  const { getExercisesQuery } = useExercise(filters as any);
+  const apiFilters = {
+    ...filters,
+    page: Number(filters.page),
+    limit: Number(filters.limit),
+  } as any;
+
+  const { getExercisesQuery } = useExercise(apiFilters);
   const [selectedExercise, setSelectedExercise] = useState<Exercise | null>(null);
   const [showModal, setShowModal] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
@@ -62,7 +68,7 @@ export default function ExerciseScreen() {
     getExercisesQuery.refetch();
   }, [filters]);
 
-  const exercises = ((getExercisesQuery as any)?.data?.data?.items as Exercise[]) || [];
+  const exercises = ((getExercisesQuery as any)?.data?.items as Exercise[]) || [];
 
   const toggleFilter = (field: keyof Filters, value: string) => {
     setFilters((prev) => ({
@@ -79,7 +85,7 @@ export default function ExerciseScreen() {
   };
 
   const totalPages = Math.ceil(
-    ((getExercisesQuery as any)?.data?.data?.total || 0) / Number(filters.limit)
+    ((getExercisesQuery as any)?.data?.total || 0) / Number(filters.limit || 1)
   );
 
   const goLastPage = () => {

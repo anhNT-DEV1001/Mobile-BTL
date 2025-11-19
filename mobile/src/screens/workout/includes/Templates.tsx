@@ -42,9 +42,11 @@ export default function Templates() {
   const [templateNote, setTemplateNote] = useState("");
   const [selectedExerciseIds, setSelectedExerciseIds] = useState<string[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
+  const [modalPage, setModalPage] = useState<number>(1);
+  const [modalLimit, setModalLimit] = useState<number>(50);
 
   const { data: templates = [], isLoading, refetch, isRefetching } = useWorkoutTemplates();
-  const { data: exercisesData, isLoading: exercisesLoading } = useExercises({ limit: 100 });
+  const { data: exercisesData, isLoading: exercisesLoading, refetch: refetchExercises } = useExercises({ q: searchQuery, page: modalPage, limit: modalLimit });
   const createTemplateMutation = useCreateWorkoutTemplate();
   const updateTemplateMutation = useUpdateWorkoutTemplate();
   const deleteTemplateMutation = useDeleteWorkoutTemplate();
@@ -144,9 +146,8 @@ export default function Templates() {
     );
   };
 
-  const filteredExercises = exercises.filter((exercise) =>
-    exercise.name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  // server-side filtering/pagination via useExercises; filteredExercises is the current page
+  const filteredExercises = exercises;
 
   const getSelectedExerciseNames = () => {
     return exercises
@@ -310,7 +311,7 @@ export default function Templates() {
 
           <Searchbar
             placeholder="Search exercises..."
-            onChangeText={setSearchQuery}
+            onChangeText={(text) => { setSearchQuery(text); setModalPage(1); }}
             value={searchQuery}
             style={styles.searchbar}
           />
@@ -318,33 +319,76 @@ export default function Templates() {
           {exercisesLoading ? (
             <ActivityIndicator size="large" color="#003366" style={styles.loading} />
           ) : (
-            <FlatList
-              data={filteredExercises}
-              keyExtractor={(item) => item._id || item.id}
-              renderItem={({ item }) => (
-                <TouchableOpacity
-                  style={styles.exerciseItem}
-                  onPress={() => handleToggleExercise(item._id || item.id)}
+            <>
+              <FlatList
+                data={filteredExercises}
+                keyExtractor={(item) => item._id || item.id}
+                renderItem={({ item }) => (
+                  <TouchableOpacity
+                    style={styles.exerciseItem}
+                    onPress={() => handleToggleExercise(item._id || item.id)}
+                  >
+                    <Checkbox
+                      status={
+                        selectedExerciseIds.includes(item._id || item.id)
+                          ? "checked"
+                          : "unchecked"
+                      }
+                    />
+                    <View style={styles.exerciseInfo}>
+                      <Text style={styles.exerciseItemName}>{item.name}</Text>
+                      {item.category && (
+                        <Text style={styles.exerciseItemCategory}>
+                          {item.category}
+                        </Text>
+                      )}
+                    </View>
+                  </TouchableOpacity>
+                )}
+                style={styles.exerciseList}
+              />
+
+              {/* Pagination controls for exercise modal */}
+              <View style={styles.modalPagination}>
+                <Button
+                  mode="outlined"
+                  onPress={() => { setModalPage(1); }}
+                  disabled={modalPage <= 1}
+                  style={styles.pageButton}
                 >
-                  <Checkbox
-                    status={
-                      selectedExerciseIds.includes(item._id || item.id)
-                        ? "checked"
-                        : "unchecked"
-                    }
-                  />
-                  <View style={styles.exerciseInfo}>
-                    <Text style={styles.exerciseItemName}>{item.name}</Text>
-                    {item.category && (
-                      <Text style={styles.exerciseItemCategory}>
-                        {item.category}
-                      </Text>
-                    )}
-                  </View>
-                </TouchableOpacity>
-              )}
-              style={styles.exerciseList}
-            />
+                  « First
+                </Button>
+                <Button
+                  mode="outlined"
+                  onPress={() => { setModalPage(Math.max(1, modalPage - 1)); }}
+                  disabled={modalPage <= 1}
+                  style={styles.pageButton}
+                >
+                  ‹ Prev
+                </Button>
+
+                <View style={styles.pageInfo}>
+                  <Text>{modalPage} / {Math.max(1, Math.ceil((exercisesData?.total || 0) / modalLimit))}</Text>
+                </View>
+
+                <Button
+                  mode="outlined"
+                  onPress={() => { setModalPage(modalPage + 1); }}
+                  disabled={modalPage >= Math.ceil((exercisesData?.total || 0) / modalLimit)}
+                  style={styles.pageButton}
+                >
+                  Next ›
+                </Button>
+                <Button
+                  mode="outlined"
+                  onPress={() => { setModalPage(Math.max(1, Math.ceil((exercisesData?.total || 0) / modalLimit))); }}
+                  disabled={modalPage >= Math.ceil((exercisesData?.total || 0) / modalLimit)}
+                  style={styles.pageButton}
+                >
+                  Last »
+                </Button>
+              </View>
+            </>
           )}
 
           <Button
@@ -631,6 +675,21 @@ const styles = StyleSheet.create({
   },
   exerciseList: {
     maxHeight: 400,
+  },
+  modalPagination: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginTop: 8,
+  },
+  pageButton: {
+    minWidth: 80,
+    marginHorizontal: 4,
+  },
+  pageInfo: {
+    alignItems: "center",
+    justifyContent: "center",
+    paddingHorizontal: 8,
   },
   exerciseItem: {
     flexDirection: "row",

@@ -28,16 +28,16 @@ export class CreateUserDto {
 
 export class UpdateUserDto {
     @ApiProperty()
-    @IsNotEmpty({ message: 'Vui lòng nhập email !' })
+    @IsOptional()
     @IsEmail({}, { message: 'Vui lòng nhập đúng định dạng email !' })
     @MaxLength(50, { message: 'Email có tối đa 50 ký tự !' })
-    email: string;
+    email?: string;
 
     @ApiProperty()
-    @IsNotEmpty({ message: 'Vui lòng nhập mật khẩu!' })
+    @IsOptional()
     @MinLength(6, { message: "Mật khẩu cần ít nhất 6 ký tự !" })
     @MaxLength(20, { message: 'Mật khẩu có tối đa 20 ký tự !' })
-    password: string;
+    password?: string;
 
     @ApiProperty()
     @IsOptional()

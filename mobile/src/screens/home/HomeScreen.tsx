@@ -247,6 +247,15 @@ export default function HomeScreen() {
                         </Text>
                     </Card.Content>
                 </Card>
+
+                <Card onPress={() => router.push("/(app)/profile")} style={styles.menuCard} elevation={1}>
+                    <Card.Content style={styles.menuItem}>
+                        <MaterialCommunityIcons name="account" size={32} color="#003366" />
+                        <Text variant="titleMedium" style={styles.menuText}>
+                            Profile
+                        </Text>
+                    </Card.Content>
+                </Card>
             </View>
         </ScrollView>
     );

@@ -278,15 +278,6 @@ export default function WorkoutDetailScreen() {
             <Stack.Screen
                 options={{
                     title: workoutData.name,
-                    headerRight: () => (
-                        <IconButton
-                            icon="pencil"
-                            onPress={() => {
-                                // TODO: Edit workout
-                                Alert.alert('Edit Workout', 'This feature will be implemented');
-                            }}
-                        />
-                    ),
                 }}
             />
 
@@ -889,7 +880,7 @@ const styles = StyleSheet.create({
     fab: {
         position: 'absolute',
         right: 16,
-        bottom: 16,
+        bottom: 32, // Extra space for safe area
         backgroundColor: '#1976d2',
     },
     modalContainer: {

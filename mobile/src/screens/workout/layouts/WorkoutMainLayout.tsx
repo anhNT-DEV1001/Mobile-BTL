@@ -34,7 +34,7 @@ export default function WorkoutMainLayout() {
       </View>
 
       {/* Footer - Tab Navigation */}
-      <View style={styles.footer}>
+      <View style={[styles.footer, { paddingBottom: insets.bottom }]}>
         <TouchableOpacity
           style={[
             styles.footerTab,
@@ -99,7 +99,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#f5f5f5",
   },
   footer: {
-    height: 56,
+    minHeight: 56,
     backgroundColor: "#ffffff",
     flexDirection: "row",
     borderTopWidth: 1,

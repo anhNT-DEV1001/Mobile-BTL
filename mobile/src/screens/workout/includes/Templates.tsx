@@ -508,7 +508,7 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     padding: 16,
-    paddingBottom: 80,
+    paddingBottom: 150, // Extra space for footer tab + FAB + safe area
   },
   header: {
     marginBottom: 24,
@@ -610,9 +610,8 @@ const styles = StyleSheet.create({
   },
   fab: {
     position: "absolute",
-    margin: 16,
-    right: 0,
-    bottom: 0,
+    right: 16,
+    bottom: 72, // 56px footer + 16px margin
     backgroundColor: "#003366",
   },
   modalContainer: {

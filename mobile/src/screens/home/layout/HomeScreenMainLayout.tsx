@@ -6,7 +6,7 @@ export default function HomeScreenMainLayout({ children }: { children: React.Rea
   const insets = useSafeAreaInsets();
   return(
     <View style={[styles.container, { paddingTop: insets.top }]}>
-      <View style={styles.content}>
+      <View style={[styles.content, { paddingBottom: insets.bottom }]}>
         {children}
       </View>
     </View>

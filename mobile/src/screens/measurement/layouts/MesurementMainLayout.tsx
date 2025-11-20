@@ -29,7 +29,7 @@ export default function MesurementMainLayout() {
             </View>
           </View>
     
-          <View style={styles.content}>
+          <View style={[styles.content, { paddingBottom: insets.bottom }]}>
             <Slot />
           </View>
     </View>
@@ -53,5 +53,8 @@ const styles = StyleSheet.create({
   headerTitle: { color: "white", fontSize: 18, fontWeight: "700" },
   headerRight: { flexDirection: "row", alignItems: "center" },
   headerAction: { color: "white", marginLeft: 12 },
-  content: { flex: 1 },
+  content: { 
+    flex: 1,
+    backgroundColor: "#f5f5f5"
+  },
 });

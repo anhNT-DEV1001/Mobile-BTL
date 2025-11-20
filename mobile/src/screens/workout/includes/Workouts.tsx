@@ -10,9 +10,9 @@ import {
 } from "react-native";
 import { Button, Card, FAB, IconButton, ActivityIndicator, Modal, Portal, TextInput } from "react-native-paper";
 import { Calendar, DateData } from "react-native-calendars";
-import { useWorkouts, useCreateWorkout, useDeleteWorkout, useWorkoutExercises, useCreateWorkoutFromTemplate, useWorkoutTemplates, useCalculateStrengthLevel } from "../hooks/useWorkout";
+import { useWorkouts, useCreateWorkout, useUpdateWorkout, useDeleteWorkout, useWorkoutExercises, useCreateWorkoutFromTemplate, useWorkoutTemplates, useCalculateStrengthLevel } from "../hooks/useWorkout";
 import { useRouter } from "expo-router";
-import type { ExerciseSet } from "../services/workout.service";
+import type { ExerciseSet, Workout } from "../services/workout.service";
 
 // Helper function to check if exercise requires weight
 const isWeightRequired = (equipment?: string): boolean => {
@@ -28,11 +28,19 @@ export default function Workouts() {
   );
   const [showCalendar, setShowCalendar] = useState(false);
   const [showAddModal, setShowAddModal] = useState(false);
+  const [showModalDatePicker, setShowModalDatePicker] = useState(false);
   const [workoutName, setWorkoutName] = useState("");
+  const [workoutNote, setWorkoutNote] = useState("");
+  const [editingDate, setEditingDate] = useState<string>("");
+  
+  // Edit mode states
+  const [modalMode, setModalMode] = useState<'create' | 'edit'>('create');
+  const [editingWorkout, setEditingWorkout] = useState<Workout | null>(null);
 
   const { data: workouts = [], isLoading, refetch, isRefetching } = useWorkouts();
   const { data: templates = [] } = useWorkoutTemplates();
   const createWorkoutMutation = useCreateWorkout();
+  const updateWorkoutMutation = useUpdateWorkout();
   const deleteWorkoutMutation = useDeleteWorkout();
   const createFromTemplateMutation = useCreateWorkoutFromTemplate();
 
@@ -47,14 +55,24 @@ export default function Workouts() {
     setShowCalendar(false);
   };
 
+  const resetModalState = () => {
+    setWorkoutName("");
+    setWorkoutNote("");
+    setEditingDate("");
+    setShowModalDatePicker(false);
+    setEditingWorkout(null);
+    setModalMode('create');
+  };
+
   const handleCreateEmptyWorkout = async () => {
     try {
       await createWorkoutMutation.mutateAsync({
         name: workoutName || "New Workout",
         date: selectedDate,
+        note: workoutNote || undefined,
       });
       setShowAddModal(false);
-      setWorkoutName("");
+      resetModalState();
       Alert.alert("Success", "Workout created successfully!");
     } catch (error) {
       Alert.alert("Error", "Failed to create workout");
@@ -68,6 +86,7 @@ export default function Workouts() {
         date: selectedDate,
       });
       setShowAddModal(false);
+      resetModalState();
       Alert.alert("Success", "Workout created from template!");
     } catch (error) {
       Alert.alert("Error", "Failed to create workout from template");
@@ -94,6 +113,36 @@ export default function Workouts() {
         },
       ]
     );
+  };
+
+  const handleEditWorkout = (workout: Workout) => {
+    setModalMode('edit');
+    setEditingWorkout(workout);
+    setWorkoutName(workout.name);
+    setWorkoutNote(workout.note || "");
+    const workoutDate = new Date(workout.date).toISOString().split("T")[0];
+    setEditingDate(workoutDate);
+    setShowAddModal(true);
+  };
+
+  const handleUpdateWorkout = async () => {
+    if (!editingWorkout) return;
+
+    try {
+      await updateWorkoutMutation.mutateAsync({
+        id: editingWorkout.id,
+        data: {
+          name: workoutName || editingWorkout.name,
+          date: editingDate || editingWorkout.date,
+          note: workoutNote || undefined,
+        },
+      });
+      setShowAddModal(false);
+      resetModalState();
+      Alert.alert("Success", "Workout updated successfully!");
+    } catch (error) {
+      Alert.alert("Error", "Failed to update workout");
+    }
   };
 
   const handleWorkoutPress = (workoutId: string) => {
@@ -184,6 +233,7 @@ export default function Workouts() {
                 key={workout.id}
                 workout={workout}
                 onPress={() => handleWorkoutPress(workout.id)}
+                onEdit={() => handleEditWorkout(workout)}               
                 onDelete={() => handleDeleteWorkout(workout.id, workout.name)}
               />
             ))
@@ -191,58 +241,140 @@ export default function Workouts() {
         </View>
       </ScrollView>
 
-      {/* Add Workout Modal */}
+      {/* Add/Edit Workout Modal */}
       <Portal>
         <Modal
           visible={showAddModal}
-          onDismiss={() => setShowAddModal(false)}
+          onDismiss={() => {
+            setShowAddModal(false);
+            resetModalState();
+          }}
           contentContainerStyle={styles.modalContainer}
         >
-          <Text style={styles.modalTitle}>Add New Workout</Text>
-          
-          <TextInput
-            label="Workout Name (optional)"
-            value={workoutName}
-            onChangeText={setWorkoutName}
-            mode="outlined"
-            style={styles.input}
-            placeholder="New Workout"
-          />
-
-          <Button
-            mode="contained"
-            onPress={handleCreateEmptyWorkout}
-            style={styles.modalButton}
-            loading={createWorkoutMutation.isPending}
+          <ScrollView 
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={styles.modalScrollContent}
+            keyboardShouldPersistTaps="handled"
           >
-            Create Empty Workout
-          </Button>
+            <Text style={styles.modalTitle}>
+              {modalMode === 'create' ? 'Add New Workout' : 'Edit Workout'}
+            </Text>
+            
+            <TextInput
+              label="Workout Name"
+              value={workoutName}
+              onChangeText={setWorkoutName}
+              mode="outlined"
+              style={styles.input}
+              placeholder="New Workout"
+            />
 
-          <Text style={styles.modalSubtitle}>Or create from template:</Text>
-
-          <ScrollView style={styles.templateList}>
-            {templates.length === 0 ? (
-              <Text style={styles.noTemplatesText}>
-                No templates available. Create one in Templates tab!
-              </Text>
-            ) : (
-              templates.map((template) => (
-                <Button
-                  key={template.id}
-                  mode="outlined"
-                  onPress={() => handleCreateFromTemplate(template.id)}
-                  style={styles.templateButton}
-                  loading={createFromTemplateMutation.isPending}
+            {modalMode === 'edit' && (
+              <>
+                <Text style={styles.inputLabel}>Workout Date</Text>
+                <TouchableOpacity
+                  style={styles.datePickerButton}
+                  onPress={() => setShowModalDatePicker(!showModalDatePicker)}
                 >
-                  {template.name}
-                </Button>
-              ))
-            )}
-          </ScrollView>
+                  <Text style={styles.datePickerButtonText}>
+                    {new Date(editingDate).toLocaleDateString("en-US", {
+                      weekday: "long",
+                      year: "numeric",
+                      month: "long",
+                      day: "numeric",
+                    })}
+                  </Text>
+                  <IconButton icon="calendar" size={20} />
+                </TouchableOpacity>
 
-          <Button onPress={() => setShowAddModal(false)} style={styles.cancelButton}>
-            Cancel
-          </Button>
+                {showModalDatePicker && (
+                  <Calendar
+                    current={editingDate}
+                    onDayPress={(day) => {
+                      setEditingDate(day.dateString);
+                      setShowModalDatePicker(false);
+                    }}
+                    markedDates={{
+                      ...markedDates,
+                      [editingDate]: {
+                        ...markedDates[editingDate],
+                        selected: true,
+                        selectedColor: "#003366",
+                      },
+                    }}
+                    theme={{
+                      selectedDayBackgroundColor: "#003366",
+                      todayTextColor: "#003366",
+                      dotColor: "#003366",
+                      arrowColor: "#003366",
+                    }}
+                    style={styles.modalCalendar}
+                  />
+                )}
+              </>
+            )}
+
+            <TextInput
+              label="Note (optional)"
+              value={workoutNote}
+              onChangeText={(text) => {
+                console.log('Note changed:', text);
+                setWorkoutNote(text);
+              }}
+              mode="outlined"
+              style={styles.input}
+              multiline
+              numberOfLines={3}
+              placeholder="Add a note about this workout"
+            />
+
+            <Button
+              mode="contained"
+              onPress={modalMode === 'create' ? handleCreateEmptyWorkout : handleUpdateWorkout}
+              style={styles.modalButton}
+              loading={modalMode === 'create' 
+                ? createWorkoutMutation.isPending 
+                : updateWorkoutMutation.isPending}
+            >
+              {modalMode === 'create' ? 'Create Empty Workout' : 'Update Workout'}
+            </Button>
+
+            {modalMode === 'create' && (
+              <>
+                <Text style={styles.modalSubtitle}>Or create from template:</Text>
+
+                <View style={styles.templateList}>
+                  {templates.length === 0 ? (
+                    <Text style={styles.noTemplatesText}>
+                      No templates available. Create one in Templates tab!
+                    </Text>
+                  ) : (
+                    templates.map((template) => (
+                      <Button
+                        key={template.id}
+                        mode="outlined"
+                        onPress={() => handleCreateFromTemplate(template.id)}
+                        style={styles.templateButton}
+                        loading={createFromTemplateMutation.isPending}
+                      >
+                        {template.name}
+                      </Button>
+                    ))
+                  )}
+                </View>
+              </>
+            )}
+
+            <Button 
+              onPress={() => {
+                setShowAddModal(false);
+                resetModalState();
+              }} 
+              style={styles.cancelButton}
+            >
+              Cancel
+            </Button>
+          </ScrollView>
         </Modal>
       </Portal>
 
@@ -318,57 +450,110 @@ function SetDisplay({ set, setIndex, equipment }: { set: ExerciseSet; setIndex: 
 interface WorkoutCardProps {
   workout: any;
   onPress: () => void;
+  onEdit: () => void;
   onDelete: () => void;
 }
 
-function WorkoutCard({ workout, onPress, onDelete }: WorkoutCardProps) {
+function WorkoutCard({ workout, onPress, onEdit, onDelete }: WorkoutCardProps) {
+  const [expanded, setExpanded] = useState(false);
   const { data: exercises = [], isLoading } = useWorkoutExercises(workout.id);
 
+  // Calculate summary stats
+  const totalSets = exercises.reduce((sum, ex) => sum + ex.sets.length, 0);
+  const totalVolume = exercises.reduce((sum, ex) => sum + (ex.totalVolume || 0), 0);
+
   return (
-    <Card style={styles.workoutCard} onPress={onPress}>
+    <Card style={styles.workoutCard}>
       <Card.Content>
         <View style={styles.workoutHeader}>
-          <View style={styles.workoutHeaderLeft}>
+          <TouchableOpacity 
+            style={styles.workoutHeaderLeft}
+            onPress={onPress}
+            activeOpacity={0.7}
+          >
             <Text style={styles.workoutName}>{workout.name}</Text>
             <Text style={styles.workoutDate}>
               {new Date(workout.date).toLocaleDateString()}
             </Text>
+          </TouchableOpacity>
+          <View style={styles.workoutHeaderRight}>
+            <IconButton
+              icon={expanded ? "chevron-up" : "chevron-down"}
+              iconColor="#003366"
+              size={20}
+              onPress={() => setExpanded(!expanded)}
+            />
+            <IconButton
+              icon="pencil"
+              iconColor="#003366"
+              size={20}
+              onPress={onEdit}
+            />
+            <IconButton
+              icon="delete"
+              iconColor="#d32f2f"
+              size={20}
+              onPress={onDelete}
+            />
           </View>
-          <IconButton
-            icon="delete"
-            iconColor="#d32f2f"
-            size={20}
-            onPress={onDelete}
-          />
         </View>
 
         {workout.note && (
           <Text style={styles.workoutNote}>{workout.note}</Text>
         )}
 
-        {isLoading ? (
-          <ActivityIndicator size="small" color="#003366" />
-        ) : exercises.length > 0 ? (
-          <View style={styles.exercisesList}>
-            {exercises.map((exercise, index) => (
-              <View key={exercise.id} style={styles.exerciseItem}>
-                <Text style={styles.exerciseName}>
-                  {index + 1}. {exercise.exercise?.name || "Exercise"}
-                </Text>
-                <View style={styles.setsContainer}>
-                  {exercise.sets.map((set: ExerciseSet, setIndex: number) => (
-                    <SetDisplay 
-                      key={setIndex} 
-                      set={set} 
-                      setIndex={setIndex}
-                      equipment={exercise.exercise?.equipment}
-                    />
-                  ))}
-                </View>
-              </View>
-            ))}
+        {/* Summary Stats - Always visible */}
+        {!isLoading && exercises.length > 0 && (
+          <View style={styles.summaryStats}>
+            <View style={styles.summaryItem}>
+              <Text style={styles.summaryNumber}>{exercises.length}</Text>
+              <Text style={styles.summaryLabel}>Exercises</Text>
+            </View>
+            <View style={styles.summaryItem}>
+              <Text style={styles.summaryNumber}>{totalSets}</Text>
+              <Text style={styles.summaryLabel}>Sets</Text>
+            </View>
+            <View style={styles.summaryItem}>
+              <Text style={styles.summaryNumber}>{totalVolume.toFixed(0)}</Text>
+              <Text style={styles.summaryLabel}>Volume (kg)</Text>
+            </View>
           </View>
-        ) : (
+        )}
+
+        {/* Detailed Exercises List - Only when expanded */}
+        {expanded && (
+          <>
+            {isLoading ? (
+              <ActivityIndicator size="small" color="#003366" />
+            ) : exercises.length > 0 ? (
+              <View style={styles.exercisesList}>
+                {exercises.map((exercise, index) => (
+                  <View key={exercise.id} style={styles.exerciseItem}>
+                    <Text style={styles.exerciseName}>
+                      {index + 1}. {exercise.exercise?.name || "Exercise"}
+                    </Text>
+                    <View style={styles.setsContainer}>
+                      {exercise.sets.map((set: ExerciseSet, setIndex: number) => (
+                        <SetDisplay 
+                          key={setIndex} 
+                          set={set} 
+                          setIndex={setIndex}
+                          equipment={exercise.exercise?.equipment}
+                        />
+                      ))}
+                    </View>
+                  </View>
+                ))}
+              </View>
+            ) : (
+              <Text style={styles.noExercisesText}>
+                No exercises added yet. Tap to add!
+              </Text>
+            )}
+          </>
+        )}
+
+        {!expanded && exercises.length === 0 && !isLoading && (
           <Text style={styles.noExercisesText}>
             No exercises added yet. Tap to add!
           </Text>
@@ -394,7 +579,7 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     padding: 16,
-    paddingBottom: 80,
+    paddingBottom: 150, // Extra space for footer tab + FAB + safe area
   },
   dateSection: {
     marginBottom: 24,
@@ -445,6 +630,11 @@ const styles = StyleSheet.create({
   workoutHeaderLeft: {
     flex: 1,
   },
+  workoutHeaderRight: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginLeft: 8,
+  },
   workoutName: {
     fontSize: 18,
     fontWeight: "700",
@@ -461,8 +651,35 @@ const styles = StyleSheet.create({
     fontStyle: "italic",
     marginBottom: 12,
   },
-  exercisesList: {
+  summaryStats: {
+    flexDirection: "row",
+    justifyContent: "space-around",
+    paddingVertical: 12,
+    paddingHorizontal: 8,
+    backgroundColor: "#f8f9fa",
+    borderRadius: 8,
     marginTop: 8,
+    marginBottom: 4,
+  },
+  summaryItem: {
+    alignItems: "center",
+  },
+  summaryNumber: {
+    fontSize: 20,
+    fontWeight: "bold",
+    color: "#003366",
+    marginBottom: 4,
+  },
+  summaryLabel: {
+    fontSize: 11,
+    color: "#757575",
+    textAlign: "center",
+  },
+  exercisesList: {
+    marginTop: 12,
+    paddingTop: 12,
+    borderTopWidth: 1,
+    borderTopColor: "#e0e0e0",
   },
   exerciseItem: {
     marginBottom: 12,
@@ -512,17 +729,18 @@ const styles = StyleSheet.create({
   },
   fab: {
     position: "absolute",
-    margin: 16,
-    right: 0,
-    bottom: 0,
+    right: 16,
+    bottom: 72, // 56px footer + 16px margin
     backgroundColor: "#003366",
   },
   modalContainer: {
     backgroundColor: "white",
     margin: 20,
-    padding: 20,
     borderRadius: 8,
     maxHeight: "80%",
+  },
+  modalScrollContent: {
+    padding: 20,
   },
   modalTitle: {
     fontSize: 20,
@@ -544,7 +762,6 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   templateList: {
-    maxHeight: 200,
     marginBottom: 16,
   },
   templateButton: {
@@ -558,5 +775,32 @@ const styles = StyleSheet.create({
   },
   cancelButton: {
     marginTop: 8,
+  },
+  inputLabel: {
+    fontSize: 12,
+    color: "#757575",
+    marginBottom: 4,
+    marginTop: 8,
+  },
+  datePickerButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    backgroundColor: "white",
+    padding: 12,
+    borderRadius: 4,
+    borderWidth: 1,
+    borderColor: "#bdbdbd",
+    marginBottom: 16,
+  },
+  datePickerButtonText: {
+    fontSize: 15,
+    color: "#333",
+    flex: 1,
+  },
+  modalCalendar: {
+    marginBottom: 16,
+    borderRadius: 8,
+    width: '100%',
   },
 });

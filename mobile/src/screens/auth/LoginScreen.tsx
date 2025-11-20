@@ -12,7 +12,7 @@ export default function LoginScreen() {
     const { login, loginMutation } = useAuth();
 
     const handleLogin = async () => {
-        if(!email || !password) return; 
+        if(!email || !password) return;
         
         console.log("🔐 Đang đăng nhập với email:", email);
         

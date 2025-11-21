@@ -26,6 +26,7 @@ export interface UserExercise {
     note?: string;
     createdAt: string;
     updatedAt: string;
+    isDone?: boolean;
 }
 
 export interface WorkoutTemplate {
@@ -116,6 +117,11 @@ export const deleteUserExercise = async (id: string): Promise<UserExercise> => {
     const response = await api.delete(`/workout/exercises/${id}`);
     return response.data.data;
 };
+
+export const markUserExercise = async (id : string , body : {timer : string}) => {
+    const response = await api.patch(`/workout/user-exersie/${id}` , body);
+    return response.data.data;
+}
 
 // ==================== WORKOUT TEMPLATE APIs ====================
 

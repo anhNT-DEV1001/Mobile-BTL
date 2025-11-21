@@ -5,8 +5,9 @@ import { IconButton } from "react-native-paper";
 import { useRouter } from "expo-router";
 import Workouts from "../includes/Workouts";
 import Templates from "../includes/Templates";
+import Schedule from "../includes/Schedule";
 
-type ViewMode = "workouts" | "templates";
+type ViewMode = "workouts" | "templates" | "schedule";
 
 export default function WorkoutMainLayout() {
   const insets = useSafeAreaInsets();
@@ -30,7 +31,9 @@ export default function WorkoutMainLayout() {
 
       {/* Content */}
       <View style={styles.content}>
-        {viewMode === "workouts" ? <Workouts /> : <Templates />}
+        {viewMode === "workouts" && <Workouts />}
+        {viewMode === "templates" && <Templates />}
+        {viewMode === "schedule" && <Schedule />}
       </View>
 
       {/* Footer - Tab Navigation */}
@@ -65,6 +68,22 @@ export default function WorkoutMainLayout() {
             ]}
           >
             My Templates
+          </Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={[
+            styles.footerTab,
+            viewMode === "schedule" && styles.footerTabActive,
+          ]}
+          onPress={() => setViewMode("schedule")}
+        >
+          <Text
+            style={[
+              styles.footerTabText,
+              viewMode === "schedule" && styles.footerTabTextActive,
+            ]}
+          >
+            My Schedule
           </Text>
         </TouchableOpacity>
       </View>

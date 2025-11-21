@@ -98,7 +98,9 @@ export class WorkoutService {
             createdAt: userExercise.createdAt,
             createdBy: userExercise.createdBy,
             updatedAt: userExercise.updatedAt,
-            updatedBy: userExercise.updatedBy
+            updatedBy: userExercise.updatedBy,
+            isDone :  userExercise.isDone,
+            timer: userExercise.timer
         }
     }
 
@@ -453,5 +455,19 @@ export class WorkoutService {
                 gender
             }
         };
+    }
+
+    async markUserExercise(id : string , timer: string) : Promise<any> {
+        try {
+            const ex = await this.userExerciseModel.findById(id);
+            if(!ex) throw new ApiError('Cập nhật thất bại !', HttpStatus.BAD_REQUEST);
+            const userExersice = await this.userExerciseModel.findByIdAndUpdate(id , {
+                isDone: !ex?.isDone ,
+                timer: timer
+            });
+            if(!userExersice) throw new ApiError('Cập nhật thất bại !', HttpStatus.BAD_REQUEST);
+        } catch (error) {
+            throw new ApiError(`Error ${error}` , HttpStatus.BAD_REQUEST);
+        }
     }
 }

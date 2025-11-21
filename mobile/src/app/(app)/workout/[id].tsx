@@ -4,8 +4,9 @@ import { useLocalSearchParams, Stack, router } from 'expo-router';
 import { useWorkout, useWorkoutExercises, useDeleteUserExercise, useUpdateUserExercise, useCalculateStrengthLevel, useCreateUserExercise } from '@/src/screens/workout/hooks/useWorkout';
 import { useExercises } from '@/src/screens/exercise/hooks/useExercise';
 import { useState, useEffect } from 'react';
-import type { UserExercise, ExerciseSet } from '@/src/screens/workout/services/workout.service';
+import { type UserExercise, type ExerciseSet, markUserExercise } from '@/src/screens/workout/services/workout.service';
 import type { Exercise } from '@/src/screens/exercise/services/exercise.service';
+import TimerModal from '@/src/common/components/TimerModal';
 
 // Helper function to check if exercise requires weight
 const isWeightRequired = (equipment?: string): boolean => {
@@ -17,7 +18,9 @@ const isWeightRequired = (equipment?: string): boolean => {
 export default function WorkoutDetailScreen() {
     const { id } = useLocalSearchParams<{ id: string }>();
     const { data: workout, isLoading: workoutLoading } = useWorkout(id || '');
-    const { data: exercises = [], isLoading: exercisesLoading } = useWorkoutExercises(id || '');
+    // const { data: exercises = [], isLoading: exercisesLoading } = useWorkoutExercises(id || '');
+    const { data: exercises = [], isLoading: exercisesLoading, refetch: refetchExercises } = useWorkoutExercises(id || '');
+
     const deleteExerciseMutation = useDeleteUserExercise();
     const updateExerciseMutation = useUpdateUserExercise();
     const createExerciseMutation = useCreateUserExercise();
@@ -74,8 +77,33 @@ export default function WorkoutDetailScreen() {
         setExercisePage(1);
         setAllExercises([]);
         setHasMoreExercises(true);
-    }, [searchQuery]);
-
+    }, [searchQuery]);  
+    
+    const [timerVisible, setTimerVisible] = useState(false);
+    const [currentExerciseId, setCurrentExerciseId] = useState<string | null>(null);
+    const handleTimer = (id : string) => {
+        setTimerVisible(true);
+        setCurrentExerciseId(id);
+    };
+    const handleCompleteTimer = async (exerciseId: string | null, totalSeconds: number) => {
+        if (!exerciseId) return;
+        try {
+            const payload = {
+                // isDone: true,
+                timer: totalSeconds.toString()
+            };
+            const res = await markUserExercise(exerciseId, payload);
+            console.log("API success:", res);
+            // REFRESH the exercises list so exercise.isDone updates
+            if (typeof refetchExercises === 'function') {
+                await refetchExercises();
+            }
+        } catch (error) {
+            console.log("API Error:", error);
+        } finally {
+            setTimerVisible(false);
+        }
+    };
     const isLoading = workoutLoading || exercisesLoading;
 
     if (isLoading || !workout) {
@@ -338,7 +366,7 @@ export default function WorkoutDetailScreen() {
                             exercisesData.map((exercise: UserExercise, index: number) => (
                                 <View key={exercise.id} style={styles.exerciseCard}>
                                     <View style={styles.exerciseHeader}>
-                                        <View style={styles.exerciseHeaderLeft}>
+                                        <View style={styles.exerciseHeaderLeft}> 
                                             <Text style={styles.exerciseName}>
                                                 {exercise.exercise?.name || 'Exercise'}
                                             </Text>
@@ -361,6 +389,12 @@ export default function WorkoutDetailScreen() {
                                                 icon="delete"
                                                 size={20}
                                                 onPress={() => handleDeleteExercise(exercise.id)}
+                                            />
+                                            <IconButton
+                                                icon="timer"
+                                                size={20}
+                                                onPress={() => handleTimer(exercise.id)}
+                                                iconColor={exercise.isDone ? "#4CAF50" : "#2196F3"}
                                             />
                                         </View>
                                     </View>
@@ -680,6 +714,12 @@ export default function WorkoutDetailScreen() {
                     </Modal>
                 </Portal>
             </View>
+            <TimerModal
+                visible={timerVisible}
+                onClose={() => setTimerVisible(false)}
+                exerciseId={currentExerciseId}
+                onComplete= {handleCompleteTimer}
+            />
         </>
     );
 }

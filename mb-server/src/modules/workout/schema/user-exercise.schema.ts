@@ -37,6 +37,12 @@ export class UserExercise extends Metadata {
   @Prop({ type: String })
   note?: string; // Ghi chú của người dùng
 
+  @Prop({type: Boolean , default: false})
+  isDone?: boolean;
+
+  @Prop({type : String , default: ""})
+  timer?: string;
+
   @Prop({ type: mongoose.Schema.Types.ObjectId, ref: User.name })
   declare createdBy: string | ObjectId;
 

@@ -246,5 +246,19 @@ export class WorkoutController {
             data: res
         }
     }
+
+    @Patch('user-exersie/:id')
+    async markUserExersieController(
+        @Param('id') id : string,
+        @Body() body : { timer: string}
+    ) : Promise<BaseResponse<any>>{
+        const uEid = id ; const timer = body.timer
+        await this.workoutService.markUserExercise(uEid , timer);
+        return {
+            status: 'success',
+            message: 'Cập nhật thành công !',
+            data : null
+        }
+    }
 }
 

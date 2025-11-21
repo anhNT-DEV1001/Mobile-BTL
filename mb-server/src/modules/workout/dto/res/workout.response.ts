@@ -44,6 +44,11 @@ export class UserExerciseResponse extends Metadata {
     
     @ApiProperty()
     note?: string;
+
+    @ApiProperty()
+    isDone?: boolean;
+     @ApiProperty()
+    timer?: string;
 }
 
 export class WorkoutTemplateResponse extends Metadata {

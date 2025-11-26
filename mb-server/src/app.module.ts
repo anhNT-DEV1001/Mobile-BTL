@@ -11,6 +11,7 @@ import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
 import { ExercisesModule } from './modules/exercises/exercises.module';
 import { WorkoutModule } from './modules/workout/workout.module';
 import { ScheduleModule } from './modules/schedule/schedule.module';
+import { NotificationModule } from './notification/notification.module';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -24,6 +25,7 @@ import { ScheduleModule } from './modules/schedule/schedule.module';
     ExercisesModule,
     WorkoutModule,
     ScheduleModule,
+    NotificationModule,
   ],
   controllers: [HealthController],
   providers: [

@@ -47,7 +47,7 @@ export class UserExerciseResponse extends Metadata {
 
     @ApiProperty()
     isDone?: boolean;
-     @ApiProperty()
+    @ApiProperty()
     timer?: string;
 }
 

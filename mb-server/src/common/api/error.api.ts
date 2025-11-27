@@ -6,7 +6,7 @@ export class ApiError extends HttpException {
             {
                 statusCode: status,
                 message,
-                field: Object.keys(field).length > 0 ? field : null, // nếu không có lỗi field thì để null
+                field: Object.keys(field).length > 0 ? field : null, 
             },
             status,
         );

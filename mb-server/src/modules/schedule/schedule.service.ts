@@ -66,7 +66,7 @@ export class ScheduleService {
     if (!schedule) {
       throw new ApiError('Failed to delete!', HttpStatus.BAD_REQUEST);
     }
-
     return this.toScheduleResponse(schedule);
   }
+  
 }

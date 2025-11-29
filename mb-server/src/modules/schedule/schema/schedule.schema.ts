@@ -1,7 +1,6 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 import mongoose, { HydratedDocument, ObjectId } from "mongoose";
 import { Metadata } from "src/common/metadata";
-import { Exercise } from "src/modules/exercises/schema/exercises.schema";
 import { User } from "src/modules/user/schema/user.schema";
 import { WorkOutTemplate } from "src/modules/workout/schema/workout-template";
 

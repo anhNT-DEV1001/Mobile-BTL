@@ -7,9 +7,11 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { JwtStrategy } from './strategy/jwt.strategy';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Token, TokenSchema } from './schema/token.schema';
+import { NotificationModule } from 'src/notification/notification.module';
 
 @Module({
   imports: [
+    NotificationModule,
     UserModule,
     MongooseModule.forFeature([{ name: Token.name, schema: TokenSchema }]),
     JwtModule.registerAsync({

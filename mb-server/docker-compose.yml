@@ -4,36 +4,80 @@ services:
   mongo1:
     image: mongo:8.0
     container_name: mongo1
+    hostname: mongo1
+    env_file:
+      - .env
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD}
     ports:
-      - 27017:27017
-    command: mongod --replSet rs0 --bind_ip_all
+      - "27017:27017"
     volumes:
-      - ./data/mongo1:/data/db
+      - mongo1-data:/data/db
+      - ./mongo-key/mongo-keyfile:/etc/mongo-keyfile:ro
+    command: >
+      mongod --replSet rs0 --auth --keyFile /etc/mongo-keyfile --bind_ip_all
     networks:
       - mongo-cluster
 
   mongo2:
     image: mongo:8.0
     container_name: mongo2
+    hostname: mongo2
+    env_file:
+      - .env
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD}
     ports:
-      - 27018:27017
-    command: mongod --replSet rs0 --bind_ip_all
+      - "27018:27017"
     volumes:
-      - ./data/mongo2:/data/db
+      - mongo2-data:/data/db
+      - ./mongo-key/mongo-keyfile:/etc/mongo-keyfile:ro
+    command: >
+      mongod --replSet rs0 --auth --keyFile /etc/mongo-keyfile --bind_ip_all
     networks:
       - mongo-cluster
 
   mongo3:
     image: mongo:8.0
     container_name: mongo3
+    hostname: mongo3
+    env_file:
+      - .env
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD}
     ports:
-      - 27019:27017
-    command: mongod --replSet rs0 --bind_ip_all
+      - "27019:27017"
     volumes:
-      - ./data/mongo3:/data/db
+      - mongo3-data:/data/db
+      - ./mongo-key/mongo-keyfile:/etc/mongo-keyfile:ro
+    command: >
+      mongod --replSet rs0 --auth --keyFile /etc/mongo-keyfile --bind_ip_all
     networks:
       - mongo-cluster
+  
+  redis:
+    image: redis:7
+    container_name: redis
+    hostname: redis
+    env_file:
+      - .env
+    ports:
+      - "${REDIS_HOST}:${REDIS_PORT}:6379"
+    command: ["redis-server", "--appendonly", "yes", "--requirepass", "${REDIS_PASSWORD}"]
+    networks:
+      - mongo-cluster
+    volumes:
+      - redis-data:/data
 
 networks:
   mongo-cluster:
     driver: bridge
+
+volumes:
+  mongo1-data:
+  mongo2-data:
+  mongo3-data:
+  redis-data:

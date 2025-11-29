@@ -9,11 +9,12 @@ import { Public } from 'src/common/decorators/public.decorator';
 import { CurrentUser } from 'src/common/decorators/user-current.decorator';
 import { CreateUserDto } from '../user/dto/req/user.request';
 import { BearerType } from 'src/common/enums';
+import { NotificationService } from 'src/notification/notification.service';
 
 @ApiTags('Authentication')
 @Controller('auth') //  /auth/login
 export class AuthController {
-    constructor(private authService: AuthService) { }
+    constructor(private authService: AuthService , private notiService : NotificationService) { }
 
     @Public()
     @Post('login')
@@ -38,6 +39,10 @@ export class AuthController {
         type: UserResponse
     })
     async meController(@CurrentUser() user): Promise<BaseResponse<UserResponse>> {
+        await this.notiService.sendNotification({
+          title: 'HTTP Test Job',
+          message: 'This job is added via HTTP',
+        });
         return {
             status: 'success',
             message: 'Lấy thông tin thành công !',

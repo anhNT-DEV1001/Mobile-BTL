@@ -11,6 +11,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Token, TokenDocument } from './schema/token.schema';
 import { CreateUserDto } from '../user/dto/req/user.request';
+import { NotificationService } from 'src/notification/notification.service';
 
 @Injectable()
 export class AuthService {
@@ -18,6 +19,7 @@ export class AuthService {
         private userService: UserService,
         private jwtService: JwtService,
         private configService: ConfigService,
+        private notiService: NotificationService,
         @InjectModel(Token.name) private tokenModel: Model<TokenDocument>
     ) { }
 

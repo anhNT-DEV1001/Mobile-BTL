@@ -12,6 +12,7 @@ import { ExercisesModule } from './modules/exercises/exercises.module';
 import { WorkoutModule } from './modules/workout/workout.module';
 import { ScheduleModule } from './modules/schedule/schedule.module';
 import { NotificationModule } from './notification/notification.module';
+import { QueueModule } from './queue/queue.module';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -26,6 +27,7 @@ import { NotificationModule } from './notification/notification.module';
     WorkoutModule,
     ScheduleModule,
     NotificationModule,
+    QueueModule,
   ],
   controllers: [HealthController],
   providers: [

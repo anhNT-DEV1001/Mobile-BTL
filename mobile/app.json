@@ -8,13 +8,20 @@
     "scheme": "mobile",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
-    "router"  : {
+    "router": {
       "origin": "src/app"
     },
+    "extra": {
+      "eas": {
+        "projectId": "06406341-20a6-4e5e-9105-db18961ca5cf"
+      }
+    },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.gym.mobile" 
     },
     "android": {
+      "package": "com.gym.mobile", 
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
         "foregroundImage": "./assets/images/android-icon-foreground.png",
@@ -23,7 +30,7 @@
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
-      "useNextNotificationsApi": true,
+      "googleServicesFile": "./google-services.json",
       "notification": {
         "icon": "./assets/images/notification-icon.png",
         "color": "#ffffff",
@@ -48,7 +55,13 @@
           }
         }
       ],
-      "expo-notifications"
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/images/notification-icon.png",
+          "color": "#ffffff"
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true,

@@ -39,10 +39,16 @@ export class AuthController {
         type: UserResponse
     })
     async meController(@CurrentUser() user): Promise<BaseResponse<UserResponse>> {
-        await this.notiService.sendNotification({
-          title: 'HTTP Test Job',
-          message: 'This job is added via HTTP',
-        });
+        // await this.notiService.sendNotification({
+        //   title: 'HTTP Test Job',
+        //   message: 'This job is added via HTTP',
+        // });
+        await this.notiService.notiSchedule(
+            { title: 'Nhắc nhở test message' },
+            '*/10 * * * * *', // Mặc định 10s nếu không gửi cron
+            'daily-reminder-job' // ID duy nhất cho job này
+        );
+        console.log("Send schedule message !");
         return {
             status: 'success',
             message: 'Lấy thông tin thành công !',

@@ -44,9 +44,18 @@ export default function Templates() {
   const [searchQuery, setSearchQuery] = useState("");
   const [modalPage, setModalPage] = useState<number>(1);
   const [modalLimit, setModalLimit] = useState<number>(50);
+  const [selectedEquipment, setSelectedEquipment] = useState<string>("");
+  const [selectedMuscle, setSelectedMuscle] = useState<string>("");
+  const [showFilters, setShowFilters] = useState(false);
 
   const { data: templates = [], isLoading, refetch, isRefetching } = useWorkoutTemplates();
-  const { data: exercisesData, isLoading: exercisesLoading, refetch: refetchExercises } = useExercises({ q: searchQuery, page: modalPage, limit: modalLimit });
+  const { data: exercisesData, isLoading: exercisesLoading, refetch: refetchExercises } = useExercises({ 
+    q: searchQuery, 
+    page: modalPage, 
+    limit: modalLimit,
+    equipment: selectedEquipment || undefined,
+    primaryMuscles: selectedMuscle || undefined,
+  });
   const createTemplateMutation = useCreateWorkoutTemplate();
   const updateTemplateMutation = useUpdateWorkoutTemplate();
   const deleteTemplateMutation = useDeleteWorkoutTemplate();
@@ -316,6 +325,104 @@ export default function Templates() {
             style={styles.searchbar}
           />
 
+          {/* Filter Toggle Button */}
+          <Button
+            mode="outlined"
+            icon={showFilters ? "chevron-up" : "filter-variant"}
+            onPress={() => setShowFilters(!showFilters)}
+            style={styles.filterToggleButton}
+          >
+            {showFilters ? "Hide Filters" : "Show Filters"}
+            {(selectedEquipment || selectedMuscle) && ` (${[selectedEquipment, selectedMuscle].filter(Boolean).length})`}
+          </Button>
+
+          {/* Filters Section */}
+          {showFilters && (
+            <View style={styles.filtersContainer}>
+              {/* Equipment Filter */}
+              <Text style={styles.filterLabel}>Equipment</Text>
+              <ScrollView 
+                horizontal 
+                showsHorizontalScrollIndicator={false}
+                style={styles.filterScrollView}
+              >
+                {["bands", "barbell", "body only", "cable", "dumbbell", "e-z curl bar", 
+                  "exercise ball", "foam roll", "kettlebells", "machine", "medicine ball", "other"].map((equipment) => (
+                  <Chip
+                    key={equipment}
+                    selected={selectedEquipment === equipment}
+                    showSelectedCheck={false}
+                    onPress={() => {
+                      setSelectedEquipment(selectedEquipment === equipment ? "" : equipment);
+                      setModalPage(1);
+                    }}
+                    style={{
+                      margin: 4,
+                      backgroundColor: selectedEquipment === equipment ? "#003366" : "#E3F2FD",
+                    }}
+                    textStyle={[
+                      styles.chipText,
+                      {
+                        color: selectedEquipment === equipment ? "#fff" : "#003366",
+                      }
+                    ]}
+                  >
+                    {equipment}
+                  </Chip>
+                ))}
+              </ScrollView>
+
+              {/* Muscle Filter */}
+              <Text style={styles.filterLabel}>Target Muscle</Text>
+              <ScrollView 
+                horizontal 
+                showsHorizontalScrollIndicator={false}
+                style={styles.filterScrollView}
+              >
+                {["abdominals", "abductors", "adductors", "biceps", "calves", "chest", 
+                  "forearms", "glutes", "hamstrings", "lats", "lower back", "middle back", 
+                  "quadriceps", "shoulders", "traps", "triceps"].map((muscle) => (
+                  <Chip
+                    key={muscle}
+                    selected={selectedMuscle === muscle}
+                    showSelectedCheck={false}
+                    onPress={() => {
+                      setSelectedMuscle(selectedMuscle === muscle ? "" : muscle);
+                      setModalPage(1);
+                    }}
+                    style={{
+                      margin: 4,
+                      backgroundColor: selectedMuscle === muscle ? "#003366" : "#E3F2FD",
+                    }}
+                    textStyle={[
+                      styles.chipText,
+                      {
+                        color: selectedMuscle === muscle ? "#fff" : "#003366",
+                      }
+                    ]}
+                  >
+                    {muscle}
+                  </Chip>
+                ))}
+              </ScrollView>
+
+              {/* Clear Filters Button */}
+              {(selectedEquipment || selectedMuscle) && (
+                <Button
+                  mode="text"
+                  onPress={() => {
+                    setSelectedEquipment("");
+                    setSelectedMuscle("");
+                    setModalPage(1);
+                  }}
+                  style={styles.clearFiltersButton}
+                >
+                  Clear All Filters
+                </Button>
+              )}
+            </View>
+          )}
+
           {exercisesLoading ? (
             <ActivityIndicator size="large" color="#003366" style={styles.loading} />
           ) : (
@@ -563,6 +670,17 @@ const styles = StyleSheet.create({
   },
   chipText: {
     fontSize: 12,
+    fontWeight: "600",
+  },
+  filterToggleButton: {
+    marginBottom: 12,
+    borderColor: "#003366",
+  },
+  filtersContainer: {
+    backgroundColor: "#f8f9fa",
+    padding: 12,
+    borderRadius: 8,
+    marginBottom: 16,
   },
   actionButtons: {
     flexDirection: "row",
@@ -714,5 +832,19 @@ const styles = StyleSheet.create({
   doneButton: {
     marginTop: 16,
     backgroundColor: "#003366",
+  },
+  filterLabel: {
+    fontSize: 13,
+    fontWeight: "600",
+    color: "#003366",
+    marginBottom: 8,
+    marginTop: 4,
+  },
+  filterScrollView: {
+    maxHeight: 60,
+    marginBottom: 12,
+  },
+  clearFiltersButton: {
+    marginVertical: 8,
   },
 });

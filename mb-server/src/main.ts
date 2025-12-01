@@ -5,9 +5,16 @@ import { corsConfig, swaggerConfig, validationConfig } from './config';
 import { AllExceptionsFilter } from './common/filter';
 import { API_PRIFIX } from './common/api';
 import { SwaggerModule } from '@nestjs/swagger';
+import { NestExpressApplication } from '@nestjs/platform-express';
+import { join } from 'path';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create<NestExpressApplication>(AppModule);
+
+  // Serve static files
+  app.useStaticAssets(join(__dirname, '..', 'assets'), {
+    prefix: '/assets/',
+  });
 
   app.setGlobalPrefix(API_PRIFIX);
   app.enableCors(corsConfig);

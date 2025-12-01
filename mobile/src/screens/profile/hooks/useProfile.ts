@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   getUserProfile,
   updateUserProfile,
+  uploadAvatar,
   UpdateUserProfilePayload,
 } from "../services/profile.service";
 import { useAuthStore } from "@/src/common/stores";
@@ -38,6 +39,28 @@ export const useUpdateUserProfile = () => {
       queryClient.invalidateQueries({ queryKey: ["userBmi"] });
       queryClient.invalidateQueries({ queryKey: ["userEnergyNeeds"] });
       
+      // Update auth store with new user data
+      if (response?.data) {
+        const currentAuth = useAuthStore.getState();
+        if (currentAuth.tokens) {
+          useAuthStore.getState().setAuth(response.data, currentAuth.tokens);
+        }
+      }
+    },
+  });
+};
+
+// Hook to upload avatar
+export const useUploadAvatar = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ userId, imageUri }: { userId: string; imageUri: string }) =>
+      uploadAvatar(userId, imageUri),
+    onSuccess: (response) => {
+      // Invalidate and refetch profile data
+      queryClient.invalidateQueries({ queryKey: PROFILE_QUERY_KEY });
+
       // Update auth store with new user data
       if (response?.data) {
         const currentAuth = useAuthStore.getState();

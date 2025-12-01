@@ -8,6 +8,7 @@ import {
   RefreshControl,
   Platform,
   TouchableOpacity,
+  Image,
 } from "react-native";
 import {
   Button,
@@ -20,10 +21,12 @@ import {
   IconButton,
 } from "react-native-paper";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import { useUserProfile, useUpdateUserProfile } from "../hooks/useProfile";
+import { useUserProfile, useUpdateUserProfile, useUploadAvatar } from "../hooks/useProfile";
 import { Calendar } from "react-native-calendars";
 import { useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import * as ImagePicker from "expo-image-picker";
+import { key } from "@/src/config/env.config";
 
 export default function ProfileMainLayout() {
   const [showEditModal, setShowEditModal] = useState(false);
@@ -40,10 +43,47 @@ export default function ProfileMainLayout() {
 
   const { data: profileData, isLoading, refetch, isRefetching } = useUserProfile();
   const updateProfileMutation = useUpdateUserProfile();
+  const uploadAvatarMutation = useUploadAvatar();
   const router = useRouter();
   const insets = useSafeAreaInsets();
 
   const profile = profileData?.data;
+
+  const handlePickImage = async () => {
+    // Request permission
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    
+    if (status !== 'granted') {
+      Alert.alert('Permission Required', 'Sorry, we need camera roll permissions to upload avatar!');
+      return;
+    }
+
+    // Pick image
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 0.8,
+    });
+
+    if (!result.canceled && result.assets[0]) {
+      const imageUri = result.assets[0].uri;
+      
+      if (!profile) return;
+
+      try {
+        await uploadAvatarMutation.mutateAsync({
+          userId: profile.id,
+          imageUri,
+        });
+        Alert.alert('Success', 'Avatar updated successfully!');
+      } catch (error: any) {
+        console.error('Avatar upload error:', error);
+        const errorMessage = error?.response?.data?.message || error?.message || 'Failed to upload avatar';
+        Alert.alert('Error', errorMessage);
+      }
+    }
+  };
 
   const handleEditProfile = () => {
     if (!profile) return;
@@ -193,11 +233,25 @@ export default function ProfileMainLayout() {
         <Card style={styles.card} elevation={2}>
           <Card.Content>
             <View style={styles.avatarSection}>
-              <MaterialCommunityIcons
-                name="account-circle"
-                size={80}
-                color="#003366"
-              />
+              <TouchableOpacity onPress={handlePickImage} style={styles.avatarContainer}>
+                {profile.profile.avatar ? (
+                  <Image
+                    source={{ 
+                      uri: `http://${key.apiHost}:${key.apiPort}/assets${profile.profile.avatar.replace(/^"+|"+$/g, '')}` 
+                    }}
+                    style={styles.avatarImage}
+                  />
+                ) : (
+                  <MaterialCommunityIcons
+                    name="account-circle"
+                    size={80}
+                    color="#003366"
+                  />
+                )}
+                <View style={styles.avatarEditBadge}>
+                  <MaterialCommunityIcons name="camera" size={16} color="white" />
+                </View>
+              </TouchableOpacity>
               <Text style={styles.username}>{profile.profile.name}</Text>
               <Text style={styles.email}>{profile.email}</Text>
             </View>
@@ -455,6 +509,31 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: "#e0e0e0",
     marginBottom: 16,
+  },
+  avatarContainer: {
+    position: "relative",
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    overflow: "hidden",
+  },
+  avatarImage: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+  },
+  avatarEditBadge: {
+    position: "absolute",
+    bottom: 0,
+    right: 0,
+    backgroundColor: "#003366",
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    justifyContent: "center",
+    alignItems: "center",
+    borderWidth: 2,
+    borderColor: "white",
   },
   username: {
     fontSize: 24,

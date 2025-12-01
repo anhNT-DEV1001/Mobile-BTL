@@ -1,4 +1,7 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, UploadedFile, UseInterceptors } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { diskStorage } from 'multer';
+import { extname } from 'path';
 import { UserService } from './user.service';
 import { CreateUserDto, UpdateUserDto } from './dto/req/user.request';
 import { UserResponse } from './dto/res/user.response';
@@ -97,6 +100,61 @@ export class UserController {
         return {
             status: 'success',
             message: 'Lấy nhu cầu năng lượng thành công!',
+            data: response
+        };
+    }
+
+    @Post(':id/avatar')
+    @ApiParam({ name: 'id', description: 'User ID' })
+    @ApiResponse({
+        status: 200,
+        type: UserResponse
+    })
+    @UseInterceptors(FileInterceptor('avatar', {
+        storage: diskStorage({
+            destination: './assets/images',
+            filename: (req, file, callback) => {
+                const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+                const ext = extname(file.originalname);
+                callback(null, `avatar-${uniqueSuffix}${ext}`);
+            }
+        }),
+        fileFilter: (req, file, callback) => {
+            if (!file.mimetype.match(/\/(jpg|jpeg|png|gif)$/)) {
+                return callback(new Error('Only image files are allowed!'), false);
+            }
+            callback(null, true);
+        },
+        limits: {
+            fileSize: 5 * 1024 * 1024 // 5MB
+        }
+    }))
+    async uploadAvatarController(
+        @Param('id') id: string,
+        @UploadedFile() file: Express.Multer.File
+    ): Promise<BaseResponse<UserResponse>> {
+        if (!file) {
+            throw new Error('No file uploaded');
+        }
+        const avatarPath = `/images/${file.filename}`;
+        
+        // Get current user to preserve existing profile data
+        const currentUser = await this.userService.findUserById(id);
+        
+        // Extract only the fields we want to keep, excluding any malformed avatar
+        const { avatar: oldAvatar, ...profileWithoutAvatar } = currentUser.profile || {};
+        
+        const updatedProfile = {
+            ...profileWithoutAvatar,
+            avatar: avatarPath
+        };
+        
+        const response = await this.userService.updateUser(id, {
+            profile: updatedProfile
+        } as any);
+        return {
+            status: 'success',
+            message: 'Cập nhật avatar thành công!',
             data: response
         };
     }

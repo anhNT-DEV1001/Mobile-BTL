@@ -363,7 +363,7 @@
 // });
 
 import React, { useState, useRef, useEffect } from "react";
-import { View, StyleSheet, ScrollView, Pressable, TextInput, KeyboardAvoidingView, Platform } from "react-native";
+import { View, StyleSheet, ScrollView, Pressable, TextInput, KeyboardAvoidingView, Platform, Image } from "react-native";
 import { Button, Text, Avatar, Surface, Card, Chip, IconButton } from "react-native-paper";
 import { useAuth } from "../auth/hooks/useAuth";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
@@ -371,6 +371,7 @@ import { useHome } from "./hooks/useHome";
 import { useAuthStore } from "@/src/common/stores";
 import { useNavigation } from "@react-navigation/native";
 import { router } from "expo-router";
+import { key } from "@/src/config/env.config";
 
 // Helper component for stat items
 const StatItem = ({ icon, value, label, iconColor = "#003366", valueStyle = {} }: {
@@ -618,7 +619,16 @@ export default function HomeScreen() {
                         My strength level
                     </Text>
                     <IconButton
-                        icon={() => <Avatar.Image size={40} source={require('../../../assets/images/icon.png')} />}
+                        icon={() => (
+                            currentUser?.profile?.avatar ? (
+                                <Image
+                                    source={{ uri: `http://${key.apiHost}:${key.apiPort}/assets${currentUser.profile.avatar.replace(/^"+|"+$/g, '')}` }}
+                                    style={{ width: 40, height: 40, borderRadius: 20 }}
+                                />
+                            ) : (
+                                <Avatar.Image size={40} source={require('../../../assets/images/icon.png')} />
+                            )
+                        )}
                         onPress={handleLogout}
                     />
                 </Surface>
@@ -626,7 +636,14 @@ export default function HomeScreen() {
                 {/* Profile Section */}
                 <Card style={styles.card} elevation={1}>
                     <Card.Content style={styles.profileContent}>
-                        <Avatar.Image size={100} source={require('../../../assets/images/icon.png')} />
+                        {currentUser?.profile?.avatar ? (
+                            <Image
+                                source={{ uri: `http://${key.apiHost}:${key.apiPort}/assets${currentUser.profile.avatar.replace(/^"+|"+$/g, '')}` }}
+                                style={{ width: 100, height: 100, borderRadius: 50 }}
+                            />
+                        ) : (
+                            <Avatar.Image size={100} source={require('../../../assets/images/icon.png')} />
+                        )}
                         <Text variant="headlineMedium" style={styles.username}>
                             {currentUser?.profile?.name || "Unknown User"}
                         </Text>

@@ -54,3 +54,32 @@ export const updateUserProfile = async (
   );
   return response.data;
 };
+
+// POST /user/:id/avatar - Upload avatar
+export const uploadAvatar = async (
+  userId: string,
+  imageUri: string
+): Promise<BaseResponse<UserProfile>> => {
+  const formData = new FormData();
+  
+  // Get file extension from uri
+  const uriParts = imageUri.split('.');
+  const fileType = uriParts[uriParts.length - 1];
+  
+  formData.append('avatar', {
+    uri: imageUri,
+    name: `avatar.${fileType}`,
+    type: `image/${fileType}`,
+  } as any);
+
+  const response = await api.post<BaseResponse<UserProfile>>(
+    `/user/${userId}/avatar`,
+    formData,
+    {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    }
+  );
+  return response.data;
+};

@@ -10,8 +10,8 @@ import { MongooseModule } from '@nestjs/mongoose';
       useFactory: async (config: ConfigService) => ({
         uri: config.get<string>('MONGO_URI'),
         dbName: config.get<string>('MONGO_DB'),
-        replicaSet: config.get<string>('MONGO_REPLICA_SET'),
-        authSource: 'admin',
+        // replicaSet: config.get<string>('MONGO_REPLICA_SET'),
+        // authSource: 'admin',
         serverSelectionTimeoutMS: 8000,
         directConnection: false,
       }),

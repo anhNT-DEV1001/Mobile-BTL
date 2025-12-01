@@ -37,6 +37,9 @@ export default function WorkoutDetailScreen() {
     const [newExerciseSets, setNewExerciseSets] = useState<ExerciseSet[]>([{ reps: 10, weight: undefined, level: null }]);
     const [newExerciseNote, setNewExerciseNote] = useState('');
     const [searchQuery, setSearchQuery] = useState('');
+    const [selectedEquipment, setSelectedEquipment] = useState<string>("");
+    const [selectedMuscle, setSelectedMuscle] = useState<string>("");
+    const [showFilters, setShowFilters] = useState(false);
     
     // Pagination states for exercise catalog
     const [exercisePage, setExercisePage] = useState(1);
@@ -46,7 +49,9 @@ export default function WorkoutDetailScreen() {
     const { data: exerciseCatalog, isLoading: exerciseCatalogLoading, isFetching: exerciseCatalogFetching } = useExercises({ 
         page: exercisePage, 
         limit: 50,
-        q: searchQuery 
+        q: searchQuery,
+        equipment: selectedEquipment || undefined,
+        primaryMuscles: selectedMuscle || undefined,
     });
 
     // Load and append exercises when catalog changes
@@ -72,12 +77,12 @@ export default function WorkoutDetailScreen() {
         }
     }, [exerciseCatalog]);
 
-    // Reset pagination when search query changes
+    // Reset pagination when search query or filters change
     useEffect(() => {
         setExercisePage(1);
         setAllExercises([]);
         setHasMoreExercises(true);
-    }, [searchQuery]);  
+    }, [searchQuery, selectedEquipment, selectedMuscle]);  
     
     const [timerVisible, setTimerVisible] = useState(false);
     const [currentExerciseId, setCurrentExerciseId] = useState<string | null>(null);
@@ -451,6 +456,104 @@ export default function WorkoutDetailScreen() {
                             value={searchQuery}
                             style={styles.searchbar}
                         />
+
+                        {/* Filter Toggle Button */}
+                        <Button
+                            mode="outlined"
+                            icon={showFilters ? "chevron-up" : "filter-variant"}
+                            onPress={() => setShowFilters(!showFilters)}
+                            style={styles.filterToggleButton}
+                        >
+                            {showFilters ? "Hide Filters" : "Show Filters"}
+                            {(selectedEquipment || selectedMuscle) && ` (${[selectedEquipment, selectedMuscle].filter(Boolean).length})`}
+                        </Button>
+
+                        {/* Filters Section */}
+                        {showFilters && (
+                            <View style={styles.filtersContainer}>
+                                {/* Equipment Filter */}
+                                <Text style={styles.filterLabel}>Equipment</Text>
+                                <ScrollView 
+                                    horizontal 
+                                    showsHorizontalScrollIndicator={false}
+                                    style={styles.filterScrollView}
+                                >
+                                    {["bands", "barbell", "body only", "cable", "dumbbell", "e-z curl bar", 
+                                      "exercise ball", "foam roll", "kettlebells", "machine", "medicine ball", "other"].map((equipment) => (
+                                      <Chip
+                                        key={equipment}
+                                        selected={selectedEquipment === equipment}
+                                        showSelectedCheck={false}
+                                        onPress={() => {
+                                          setSelectedEquipment(selectedEquipment === equipment ? "" : equipment);
+                                          setExercisePage(1);
+                                        }}
+                                        style={{
+                                          margin: 4,
+                                          backgroundColor: selectedEquipment === equipment ? "#1976d2" : "#E3F2FD",
+                                        }}
+                                        textStyle={[
+                                          styles.chipTextStyle,
+                                          {
+                                            color: selectedEquipment === equipment ? "#fff" : "#1976d2",
+                                          }
+                                        ]}
+                                      >
+                                        {equipment}
+                                      </Chip>
+                                    ))}
+                                </ScrollView>
+
+                                {/* Muscle Filter */}
+                                <Text style={styles.filterLabel}>Target Muscle</Text>
+                                <ScrollView 
+                                    horizontal 
+                                    showsHorizontalScrollIndicator={false}
+                                    style={styles.filterScrollView}
+                                >
+                                    {["abdominals", "abductors", "adductors", "biceps", "calves", "chest", 
+                                      "forearms", "glutes", "hamstrings", "lats", "lower back", "middle back", 
+                                      "quadriceps", "shoulders", "traps", "triceps"].map((muscle) => (
+                                      <Chip
+                                        key={muscle}
+                                        selected={selectedMuscle === muscle}
+                                        showSelectedCheck={false}
+                                        onPress={() => {
+                                          setSelectedMuscle(selectedMuscle === muscle ? "" : muscle);
+                                          setExercisePage(1);
+                                        }}
+                                        style={{
+                                          margin: 4,
+                                          backgroundColor: selectedMuscle === muscle ? "#1976d2" : "#E3F2FD",
+                                        }}
+                                        textStyle={[
+                                          styles.chipTextStyle,
+                                          {
+                                            color: selectedMuscle === muscle ? "#fff" : "#1976d2",
+                                          }
+                                        ]}
+                                      >
+                                        {muscle}
+                                      </Chip>
+                                    ))}
+                                </ScrollView>
+
+                                {/* Clear Filters Button */}
+                                {(selectedEquipment || selectedMuscle) && (
+                                    <Button
+                                      mode="text"
+                                      onPress={() => {
+                                        setSelectedEquipment("");
+                                        setSelectedMuscle("");
+                                        setExercisePage(1);
+                                      }}
+                                      style={styles.clearFiltersButton}
+                                    >
+                                      Clear All Filters
+                                    </Button>
+                                )}
+                            </View>
+                        )}
 
                         {exerciseCatalogLoading && exercisePage === 1 ? (
                             <ActivityIndicator size="large" color="#1976d2" style={styles.loading} />
@@ -1078,5 +1181,33 @@ const styles = StyleSheet.create({
         color: '#757575',
         fontSize: 14,
         paddingVertical: 24,
+    },
+    chipTextStyle: {
+        fontSize: 12,
+        fontWeight: '600',
+    },
+    filterToggleButton: {
+        marginBottom: 12,
+        borderColor: '#1976d2',
+    },
+    filtersContainer: {
+        backgroundColor: '#f8f9fa',
+        padding: 12,
+        borderRadius: 8,
+        marginBottom: 16,
+    },
+    filterLabel: {
+        fontSize: 13,
+        fontWeight: '600',
+        color: '#1976d2',
+        marginBottom: 8,
+        marginTop: 4,
+    },
+    filterScrollView: {
+        maxHeight: 60,
+        marginBottom: 12,
+    },
+    clearFiltersButton: {
+        marginVertical: 4,
     },
 });

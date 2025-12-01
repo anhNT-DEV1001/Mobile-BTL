@@ -19,6 +19,12 @@ export class NotificationDto {
   @ApiProperty()
   @IsOptional()
   schedule: string;
+  @ApiProperty()
+  @IsOptional()
+  days: number[];
+  @ApiProperty({ description: "Giờ gửi dạng 'HH:mm', ví dụ '08:30' hoặc '18:15'", type: String })
+  @IsOptional()
+  time: string; // chỉ nhận string HH:mm
 }
 
 export class ScheduleNotificationDto {
@@ -26,17 +32,13 @@ export class ScheduleNotificationDto {
   @IsOptional()
   scheduleId: string;
 
-  @ApiProperty({ description: 'Số mili giây giữa các lần gửi (ví dụ: 10000 cho 10s, 86400000 cho 1 ngày)', required: false })
+  @ApiProperty({ description: 'Ngày trong tuần (ví dụ: [1,3,5]). 0=Chủ nhật', type: [Number] })
   @IsOptional()
-  intervalMs?: number;
+  days: number[];
 
-  @ApiProperty({ description: 'Dạng cron (nếu dùng crontab, ví dụ "0 8 * * *" gửi 8h sáng hằng ngày)', required: false })
+  @ApiProperty({ description: "Giờ gửi dạng 'HH:mm', ví dụ '08:30' hoặc '18:15'", type: String })
   @IsOptional()
-  cronPattern?: string;
-
-  @ApiProperty({ description: 'Nội dung tuỳ chọn, nếu không có sẽ auto message', required: false })
-  @IsOptional()
-  message?: string;
+  time: string; // chỉ nhận string HH:mm
 }
 
 export class RemoveScheduleNotificationDto {

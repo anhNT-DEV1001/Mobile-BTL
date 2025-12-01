@@ -110,6 +110,11 @@ export class NotificationController {
     };
   }
 
+  /**
+   * Tạo lịch lặp gửi notification cho lịch tập: chỉ cần truyền scheduleId (string), days (mảng số thứ trong tuần), time (chuỗi HH:mm).
+   * ví dụ body: { scheduleId: 'id lịch', days: [1,3,5], time: '08:30' }
+   * Hệ thống sẽ tự sinh cron gửi đúng các ngày/giờ này.
+   */
   @Post('repeat')
   @ApiResponse({ status: 200, description: 'Schedule repeat notification successfully' })
   @ApiBody({ type: ScheduleNotificationDto })
@@ -117,7 +122,11 @@ export class NotificationController {
     @CurrentUser() user,
     @Body() dto: ScheduleNotificationDto
   ) {
-    // Gọi service để tạo job, truyền id schedule, interval/crontab, user
+    console.log('[NotificationController] /notification/repeat called', {
+      userId: user?.id,
+      scheduleId: dto.scheduleId,
+    });
+    // Service đã đảm trách kiểm tra đủ trường và tạo lịch phù hợp.
     const jobId = await this.notiService.handleScheduleRepeatNotification(user, dto);
     return {
       success: true,
@@ -132,6 +141,9 @@ export class NotificationController {
   async removeRepeatNotification(
     @Body() dto: RemoveScheduleNotificationDto
   ) {
+    console.log('[NotificationController] /notification/repeat DELETE called', {
+      jobId: dto.jobId,
+    });
     const result = await this.notiService.removeScheduleRepeatJob(dto);
     return {
       success: result,

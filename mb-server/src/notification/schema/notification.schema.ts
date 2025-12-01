@@ -12,6 +12,10 @@ export class Notifcation extends Metadata{
   delay: number;
   @Prop({type : mongoose.Schema.Types.ObjectId , ref : Schedule.name})
   schedule: string | mongoose.Schema.Types.ObjectId;
+  @Prop({type : [Number] , default: [1,2,3,4,5,6,0]}) //(0=Sunday) 1 = Monday, 2 = Tuesday, 3 = Wednesday, 4 = Thursday, 5 = Friday, 6 = Saturday, 0 = Sunday
+  days: number[];
+  @Prop({type : String, default: '00:00'}) // HH:MM
+  time: string;
   @Prop({type : mongoose.Schema.Types.ObjectId , ref : User.name })
   declare createdBy: string | mongoose.Schema.Types.ObjectId;
   @Prop({type : mongoose.Schema.Types.ObjectId , ref : User.name})

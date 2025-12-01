@@ -75,16 +75,33 @@ export class NotificationService {
   }
 
 
-  async createUserNoti(user : UserResponse , dto : NotificationDto) {
+  async createUserNoti(user: UserResponse, dto: NotificationDto) {
+    // Validate days/time nếu có
+    let days: number[] | undefined = undefined;
+    let time: string | undefined = undefined;
+    if (dto.days) {
+      if (!Array.isArray(dto.days) || !dto.days.every(n => typeof n === 'number')) {
+        throw new ApiError('days phải là mảng số', HttpStatus.BAD_REQUEST);
+      }
+      days = dto.days;
+    }
+    if (dto.time) {
+      if (typeof dto.time !== 'string' || !/^\d{2}:\d{2}$/.test(dto.time)) {
+        throw new ApiError("time phải là chuỗi 'HH:mm'", HttpStatus.BAD_REQUEST);
+      }
+      time = dto.time;
+    }
     const data = {
-      expoToken : dto.expoToken,
-      delay : dto.delay,
-      schedule : dto.schedule,
+      expoToken: dto.expoToken,
+      delay: dto.delay,
+      schedule: dto.schedule,
       createdBy: user.id,
-      updatedBy: user.id
-    } as NotificationDocument
+      updatedBy: user.id,
+      ...(days ? { days } : {}),
+      ...(time ? { time } : {}),
+    } as any;
     const userNotification = await this.notiModel.create(data);
-    if(!userNotification) throw new ApiError('Faild to create user notification !' , HttpStatus.BAD_REQUEST);
+    if (!userNotification) throw new ApiError('Faild to create user notification !', HttpStatus.BAD_REQUEST);
     return userNotification;
   }
 
@@ -94,16 +111,33 @@ export class NotificationService {
     return userNoti;
   }
 
-  async updateUserNoti (user : UserResponse , dto : NotificationDto) {
+  async updateUserNoti(user: UserResponse, dto: NotificationDto) {
+    // Validate days/time nếu có
+    let days: number[] | undefined = undefined;
+    let time: string | undefined = undefined;
+    if (dto.days) {
+      if (!Array.isArray(dto.days) || !dto.days.every(n => typeof n === 'number')) {
+        throw new ApiError('days phải là mảng số', HttpStatus.BAD_REQUEST);
+      }
+      days = dto.days;
+    }
+    if (dto.time) {
+      if (typeof dto.time !== 'string' || !/^\d{2}:\d{2}$/.test(dto.time)) {
+        throw new ApiError("time phải là chuỗi 'HH:mm'", HttpStatus.BAD_REQUEST);
+      }
+      time = dto.time;
+    }
     const data = {
-      expoToken : dto.expoToken,
-      delay : dto.delay,
-      schedule : dto.schedule,
+      expoToken: dto.expoToken,
+      delay: dto.delay,
+      schedule: dto.schedule,
       createdBy: user.id,
-      updatedBy: user.id
-    } as NotificationDocument
-    const updated = await this.notiModel.findOneAndUpdate({createdBy : user.id}, data);
-    if(!updated) throw new ApiError('Faild to updated user notification !' , HttpStatus.BAD_REQUEST);
+      updatedBy: user.id,
+      ...(days ? { days } : {}),
+      ...(time ? { time } : {}),
+    } as any;
+    const updated = await this.notiModel.findOneAndUpdate({ createdBy: user.id }, data, { new: true });
+    if (!updated) throw new ApiError('Faild to updated user notification !', HttpStatus.BAD_REQUEST);
     return updated;
   }
 
@@ -167,17 +201,36 @@ export class NotificationService {
   }
 
   /**
-   * Đặt lịch gửi notification lặp lại theo interval hoặc cron
+   * Đặt lịch gửi notification lặp lại dựa trên days (arr int) và time (chuỗi HH:mm)
    */
   async handleScheduleRepeatNotification(user: UserResponse, dto: ScheduleNotificationDto): Promise<string> {
-    // Lấy token từ Notification schema theo user.id
+    // Lấy notification theo user.id
     const userNoti = await this.notiModel.findOne({ createdBy: user.id });
     if (!userNoti) throw new ApiError('User chưa có notification token', HttpStatus.BAD_REQUEST);
-    // Lấy schedule
+
+    // Lấy schedule từ id (vẫn giữ để sinh message chuẩn)
     const schedule = await this.scheduleModel.findById(dto.scheduleId);
     if (!schedule) throw new ApiError('Schedule không tồn tại!', HttpStatus.BAD_REQUEST);
-    const message = dto.message || `Bạn có lịch tập: ${schedule.name} vào hôm nay`;
-    // Job key: ensure uniqueness theo user+schedule
+
+    // Lấy cấu hình days, time từ bản ghi notification
+    const days = userNoti.days;
+    const time = userNoti.time;
+    if (!days || !Array.isArray(days) || days.length === 0) {
+      throw new ApiError('Notification chưa cấu hình days (mảng thứ trong tuần, 0-6)', HttpStatus.BAD_REQUEST);
+    }
+    if (!time || typeof time !== 'string' || !/^\d{2}:\d{2}$/.test(time)) {
+      throw new ApiError("Notification chưa cấu hình hoặc sai format time 'HH:mm'", HttpStatus.BAD_REQUEST);
+    }
+    // Tách giờ phút
+    const [hour, minute] = time.split(':').map(Number);
+    if (
+      Number.isNaN(hour) || Number.isNaN(minute) ||
+      hour < 0 || hour > 23 || minute < 0 || minute > 59
+    ) {
+      throw new ApiError("Time trong notification phải dạng hợp lệ (HH:mm)", HttpStatus.BAD_REQUEST);
+    }
+    const message = `Bạn có lịch tập: ${schedule.name} vào hôm nay!`;
+    // Job key: ensure uniqueness
     const jobId = `noti_repeat_${user.id}_${schedule._id}`;
     const data = {
       token: userNoti.expoToken,
@@ -186,13 +239,8 @@ export class NotificationService {
       scheduleId: schedule._id,
       userId: user.id
     };
-    if (dto.intervalMs) {
-      await this.scheduleRepeatable(jobId, data, dto.intervalMs);
-    } else if (dto.cronPattern) {
-      await this.scheduleCron(jobId, data, dto.cronPattern);
-    } else {
-      throw new ApiError('Bạn phải nhập intervalMs hoặc cronPattern!', HttpStatus.BAD_REQUEST);
-    }
+    const cronPattern = `${minute} ${hour} * * ${days.join(",")}`;
+    await this.scheduleCron(jobId, data, cronPattern);
     return jobId;
   }
 
@@ -230,5 +278,20 @@ export class NotificationService {
       console.log(`[Producer] Đã xoá repeatable job key = ${job.key}`);
     }
     return removed;
+  }
+
+  /**
+   * Generate cron pattern from days array and time (Date instance)
+   * days: số thứ trong tuần: [1,2,4] - 0=Chủ nhật, 1=Thứ 2, ...
+   * time: Date instance chỉ quan tâm giờ và phút
+   * VD: days=[1,3,5], time=2023-01-01T08:30:00 -> '30 8 * * 1,3,5'
+   */
+  private generateCronPatternFromDaysTime(days: number[], time: Date): string {
+    if (!days || !time) throw new Error('Missing days or time');
+    const minutes = time.getMinutes();
+    const hours = time.getHours();
+    const daysStr = days.join(",");
+    // Cron: minute hour * * dayOfWeek(s)
+    return `${minutes} ${hours} * * ${daysStr}`;
   }
 }

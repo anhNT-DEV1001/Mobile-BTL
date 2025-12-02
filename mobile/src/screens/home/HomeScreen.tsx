@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import { View, StyleSheet, ScrollView, Pressable, TextInput, KeyboardAvoidingView, Platform, Animated } from "react-native";
+import { View, StyleSheet, ScrollView, Pressable, TextInput, KeyboardAvoidingView, Platform, Image } from "react-native";
 import { Button, Text, Avatar, Surface, Card, Chip, IconButton } from "react-native-paper";
 import { useAuth } from "../auth/hooks/useAuth";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
@@ -7,6 +7,7 @@ import { useHome } from "./hooks/useHome";
 import { useAuthStore } from "@/src/common/stores";
 import { useNavigation } from "@react-navigation/native";
 import { router } from "expo-router";
+import { key } from "@/src/config/env.config";
 
 // Helper component for stat items
 const StatItem = ({ icon, value, label, iconColor = "#003366", valueStyle = {} }: {
@@ -27,55 +28,11 @@ const StatItem = ({ icon, value, label, iconColor = "#003366", valueStyle = {} }
     </View>
 );
 
-const TypingIndicator = () => {
-    const dot1 = useRef(new Animated.Value(0)).current;
-    const dot2 = useRef(new Animated.Value(0)).current;
-    const dot3 = useRef(new Animated.Value(0)).current;
-
-    const createAnimation = (animatedValue: Animated.Value, delay: number) => {
-        return Animated.loop(
-            Animated.sequence([
-                Animated.timing(animatedValue, {
-                    toValue: -4,
-                    duration: 300,
-                    delay,
-                    useNativeDriver: true,
-                }),
-                Animated.timing(animatedValue, {
-                    toValue: 0,
-                    duration: 300,
-                    useNativeDriver: true,
-                }),
-            ])
-        );
-    };
-
-    useEffect(() => {
-        createAnimation(dot1, 0).start();
-        createAnimation(dot2, 150).start();
-        createAnimation(dot3, 300).start();
-    }, []);
-    return (
-        <View style={[styles.chatBubble, styles.botBubble, { flexDirection: "row", gap: 4 }]}>
-            <Animated.View style={{ transform: [{ translateY: dot1 }] }}>
-                <Text style={{ color: "#fff", fontSize: 20 }}>●</Text>
-            </Animated.View>
-            <Animated.View style={{ transform: [{ translateY: dot2 }] }}>
-                <Text style={{ color: "#fff", fontSize: 20 }}>●</Text>
-            </Animated.View>
-            <Animated.View style={{ transform: [{ translateY: dot3 }] }}>
-                <Text style={{ color: "#fff", fontSize: 20 }}>●</Text>
-            </Animated.View>
-        </View>
-    );
-};
-
 // Chat Widget Component
 const ChatWidget = ({ webhookUrl, visible, onClose }: { webhookUrl: string; visible: boolean; onClose: () => void }) => {
     const [messages, setMessages] = useState<{ type: "user" | "bot"; text: string }[]>([]);
     const [input, setInput] = useState("");
     const scrollRef = useRef<ScrollView>(null);
-    const [isTyping, setIsTyping] = useState(false);
 
     const getChatId = () => {
         let chatId = globalThis.sessionStorage?.getItem("chatId");
@@ -92,7 +49,6 @@ const ChatWidget = ({ webhookUrl, visible, onClose }: { webhookUrl: string; visi
         const chatId = getChatId();
         const messageToSend = input;
         setInput("");
-        setIsTyping(true);
 
         try {
             const response = await fetch(webhookUrl, {
@@ -125,8 +81,6 @@ const ChatWidget = ({ webhookUrl, visible, onClose }: { webhookUrl: string; visi
         } catch (err) {
             console.error(err);
             setMessages(prev => [...prev, { type: "bot", text: "Error sending message" }]);
-        } finally {
-            setIsTyping(false);
         }
 
         setTimeout(() => {
@@ -159,7 +113,6 @@ const ChatWidget = ({ webhookUrl, visible, onClose }: { webhookUrl: string; visi
                         <Text style={{ color: msg.type === "user" ? "#333" : "#fff" }}>{msg.text}</Text>
                     </View>
                 ))}
-                {isTyping && <TypingIndicator />}
             </ScrollView>
             <View style={styles.chatFooter}>
                 <TextInput
@@ -274,7 +227,16 @@ export default function HomeScreen() {
                         My strength level
                     </Text>
                     <IconButton
-                        icon={() => <Avatar.Image size={40} source={require('../../../assets/images/icon.png')} />}
+                        icon={() => (
+                            currentUser?.profile?.avatar ? (
+                                <Image
+                                    source={{ uri: `http://${key.apiHost}:${key.apiPort}/assets${currentUser.profile.avatar.replace(/^"+|"+$/g, '')}` }}
+                                    style={{ width: 40, height: 40, borderRadius: 20 }}
+                                />
+                            ) : (
+                                <Avatar.Image size={40} source={require('../../../assets/images/icon.png')} />
+                            )
+                        )}
                         onPress={handleLogout}
                     />
                 </Surface>
@@ -303,7 +265,14 @@ export default function HomeScreen() {
                 {/* Profile Section */}
                 <Card style={styles.card} elevation={1}>
                     <Card.Content style={styles.profileContent}>
-                        <Avatar.Image size={100} source={require('../../../assets/images/icon.png')} />
+                        {currentUser?.profile?.avatar ? (
+                            <Image
+                                source={{ uri: `http://${key.apiHost}:${key.apiPort}/assets${currentUser.profile.avatar.replace(/^"+|"+$/g, '')}` }}
+                                style={{ width: 100, height: 100, borderRadius: 50 }}
+                            />
+                        ) : (
+                            <Avatar.Image size={100} source={require('../../../assets/images/icon.png')} />
+                        )}
                         <Text variant="headlineMedium" style={styles.username}>
                             {currentUser?.profile?.name || "Unknown User"}
                         </Text>
@@ -413,7 +382,6 @@ export default function HomeScreen() {
 
             {/* Chat Widget */}
             <ChatWidget webhookUrl={webhookUrl} visible={chatVisible} onClose={() => setChatVisible(false)} />
-            
         </View>
     );
 }

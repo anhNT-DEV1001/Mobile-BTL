@@ -53,7 +53,15 @@ export class ScheduleService {
   }
 
   async updateUserSchedule(user: UserResponse , dto : ScheduleDto) : Promise<ScheduleResponse>{
-    const updated = await this.scheduleModel.findOneAndUpdate({createdBy: user.id} , dto );
+    console.log("dto---",dto);
+    const data = {
+      name : dto.name,
+      type:dto.type,
+      replay: dto.replay,
+      template: dto.templates,
+      updatedBy: user.id
+    }
+    const updated = await this.scheduleModel.findOneAndUpdate({createdBy: user.id} , data, { new: true });
     if(!updated) throw new ApiError('Faild to updated' , HttpStatus.BAD_REQUEST);
     return this.toScheduleResponse(updated);
   }

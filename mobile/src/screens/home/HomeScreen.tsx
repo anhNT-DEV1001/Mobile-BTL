@@ -86,7 +86,6 @@ const ChatWidget = ({ webhookUrl, visible, onClose }: { webhookUrl: string; visi
         return chatId;
     };
 
-
     const sendMessage = async () => {
         if (!input.trim()) return;
         setMessages(prev => [...prev, { type: "user", text: input }]);
@@ -270,9 +269,7 @@ export default function HomeScreen() {
 
     return (
         <View style={{ flex: 1 }}>
-            <ScrollView style={styles.scrollView}>
-                {/* Header */}
-                <Surface style={styles.header} elevation={2}>
+            <Surface style={styles.header} elevation={2}>
                     <Text variant="headlineSmall" style={styles.headerTitle}>
                         My strength level
                     </Text>
@@ -281,6 +278,27 @@ export default function HomeScreen() {
                         onPress={handleLogout}
                     />
                 </Surface>
+
+            <ScrollView style={styles.scrollView}>
+                {/* Header */}
+                {/* <Surface style={styles.header} elevation={2}>
+                    <Text variant="headlineSmall" style={styles.headerTitle}>
+                        My strength level
+                    </Text>
+                    <IconButton
+                        icon={() => (
+                            currentUser?.profile?.avatar ? (
+                                <Image
+                                    source={{ uri: `http://${key.apiHost}:${key.apiPort}/assets${currentUser.profile.avatar.replace(/^"+|"+$/g, '')}` }}
+                                    style={{ width: 40, height: 40, borderRadius: 20 }}
+                                />
+                            ) : (
+                                <Avatar.Image size={40} source={require('../../../assets/images/icon.png')} />
+                            )
+                        )}
+                        onPress={handleLogout}
+                    />
+                </Surface> */}
 
                 {/* Profile Section */}
                 <Card style={styles.card} elevation={1}>

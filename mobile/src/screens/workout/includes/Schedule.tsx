@@ -161,6 +161,21 @@ export default function Schedule() {
     }
   };
 
+  const handleToggleTemplate = (tplId: string, tplName: string) => {
+    const isSelected = selectedTemplateIds.includes(tplId);
+    let newIds: string[] = [];
+
+    if (isSelected) {
+      newIds = selectedTemplateIds.filter((id) => id !== tplId);
+      console.log(`[Event] Đã bỏ active template: "${tplName}"`);
+    } else {
+      newIds = [...selectedTemplateIds, tplId];
+      console.log(`[Event] Đã active template: "${tplName}"`);
+    }
+    console.log("Danh sách Active Templates hiện tại:", newIds);
+    setSelectedTemplateIds(newIds);
+  };
+
   return (
     <View style={styles.container}>
       {loading ? (
@@ -245,33 +260,29 @@ export default function Schedule() {
 
               <Text style={styles.label}>Chọn Workout Template *</Text>
               <View style={styles.templateList}>
-                {templates.map((tpl) => (
-                  <TouchableOpacity
-                    key={tpl.id}
-                    style={[
-                      styles.templateItem,
-                      selectedTemplateIds.includes(tpl.id) && 
-                        styles.templateItemActive,
-                    ]}
-                    onPress={() => {
-                      setSelectedTemplateIds((prev) =>
-                        prev.includes(tpl.id)
-                          ? prev.filter((id) => id !== tpl.id)
-                          : [...prev, tpl.id]
-                      );
-                    }}
-                  >
-                    <Text
+                {templates.map((tpl: any) => {
+                  const tplId = tpl.id || tpl._id;
+                  const isSelected = selectedTemplateIds.includes(tplId);
+                  return (
+                    <TouchableOpacity
+                      key={tplId} 
                       style={[
-                        styles.templateItemText,
-                        selectedTemplateIds.includes(tpl.id) &&
-                          styles.templateItemTextActive,
+                        styles.templateItem,
+                        isSelected && styles.templateItemActive,
                       ]}
+                      onPress={() => handleToggleTemplate(tplId, tpl.name)}
                     >
-                      {tpl.name}
-                    </Text>
-                  </TouchableOpacity>
-                ))}
+                      <Text
+                        style={[
+                          styles.templateItemText,
+                          isSelected && styles.templateItemTextActive,
+                        ]}
+                      >
+                        {tpl.name}
+                      </Text>
+                    </TouchableOpacity>
+                  );
+                })}
                 {templates.length === 0 && (
                   <Text style={styles.emptyText}>
                     Bạn chưa có template nào. Hãy tạo template trước.

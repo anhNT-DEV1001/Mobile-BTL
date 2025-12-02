@@ -20,6 +20,49 @@ export function useSchedule() {
   const [type, setType] = useState<string>("");
   const [replay, setReplay] = useState<string>("1");
   const [selectedTemplateIds, setSelectedTemplateIds] = useState<string[]>([]);
+  
+  // Helpers to keep selected ids consistent and unique
+  const toStringId = (val: unknown) =>
+    typeof val === "string"
+      ? val
+      : typeof (val as any)?._id === "string"
+      ? (val as any)._id
+      : typeof (val as any)?.id === "string"
+      ? (val as any).id
+      : undefined;
+
+  const setSelectedUnique = (ids: Array<string | undefined>) => {
+    const cleaned = ids.filter((x): x is string => !!x);
+    const unique = Array.from(new Set(cleaned));
+    setSelectedTemplateIds(unique);
+  };
+
+  const toggleTemplateId = (id: string) => {
+    setSelectedTemplateIds((prev) => {
+      const exists = prev.includes(id);
+      const next = exists ? prev.filter((x) => x !== id) : [...prev, id];
+      return Array.from(new Set(next));
+    });
+  };
+
+  const selectTemplateId = (id: string) => {
+    setSelectedTemplateIds((prev) => Array.from(new Set([...prev, id])));
+  };
+
+  const deselectTemplateId = (id: string) => {
+    setSelectedTemplateIds((prev) => prev.filter((x) => x !== id));
+  };
+
+  // Replace the whole selected list (e.g., from Active Templates UI)
+  const setActiveTemplates = (ids: string[]) => {
+    setSelectedUnique(ids.map((x) => toStringId(x)));
+  };
+
+  // Derived list of active template entities based on selected ids
+  const activeTemplates: WorkoutTemplate[] = templates.filter((t) => {
+    const id = toStringId(t);
+    return id ? selectedTemplateIds.includes(id) : false;
+  });
 
   const loadData = useCallback(async () => {
     setLoading(true);
@@ -39,14 +82,12 @@ export function useSchedule() {
         setReplay(scheduleRes.replay?.toString() || "1");
 
         if (Array.isArray(scheduleRes.templates)) {
-          const ids = scheduleRes.templates
-            .map((t: any) =>
-              typeof t === "string" ? t : t?.id || t?._id || null
-            )
-            .filter((id: string | null) => !!id) as string[];
-          setSelectedTemplateIds(ids);
+          const ids = scheduleRes.templates.map((t: any) =>
+            typeof t === "string" ? t : t?.id || t?._id || undefined
+          );
+          setSelectedUnique(ids);
         } else {
-          setSelectedTemplateIds([]); 
+          setSelectedTemplateIds([]);
         }
       }
     } catch (err: any) {
@@ -65,11 +106,11 @@ export function useSchedule() {
       setName(schedule.name);
       setType(schedule.type || "");
       setReplay(schedule.replay?.toString() || "1");
-            if (Array.isArray(schedule.templates)) {
-        const ids = schedule.templates
-            .map((t: any) => typeof t === "string" ? t : t?.id || t?._id || null)
-            .filter((id: any) => !!id);
-        setSelectedTemplateIds(ids);
+      if (Array.isArray(schedule.templates)) {
+        const ids = schedule.templates.map((t: any) =>
+          typeof t === "string" ? t : t?.id || t?._id || undefined
+        );
+        setSelectedUnique(ids);
       } else {
         setSelectedTemplateIds([]);
       }
@@ -101,7 +142,8 @@ export function useSchedule() {
       name: name.trim(),
       type: type.trim() || undefined,
       replay: replay ? Number(replay) : undefined,
-      templates: selectedTemplateIds,
+      // Always send clean, unique, string ids
+      templates: Array.from(new Set(selectedTemplateIds.map(String))),
     };
     console.log("form---",payload);
     setSaving(true);
@@ -126,6 +168,7 @@ export function useSchedule() {
   return {
     schedule,
     templates,
+    activeTemplates,
     loading,
     saving,
     error,
@@ -142,6 +185,10 @@ export function useSchedule() {
     setReplay,
     selectedTemplateIds,
     setSelectedTemplateIds,
+    toggleTemplateId,
+    selectTemplateId,
+    deselectTemplateId,
+    setActiveTemplates,
 
     reload: loadData,
     handleSave,

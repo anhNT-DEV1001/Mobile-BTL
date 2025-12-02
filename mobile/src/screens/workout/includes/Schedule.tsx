@@ -39,6 +39,9 @@ export default function Schedule() {
     setReplay,
     selectedTemplateIds,
     setSelectedTemplateIds,
+    toggleTemplateId,
+    setActiveTemplates,
+    activeTemplates,
     handleSave,
   } = useSchedule();
 
@@ -163,17 +166,17 @@ export default function Schedule() {
 
   const handleToggleTemplate = (tplId: string, tplName: string) => {
     const isSelected = selectedTemplateIds.includes(tplId);
-    let newIds: string[] = [];
+    const nextIds = isSelected
+      ? selectedTemplateIds.filter((id) => id !== tplId)
+      : Array.from(new Set([...selectedTemplateIds, tplId]));
 
-    if (isSelected) {
-      newIds = selectedTemplateIds.filter((id) => id !== tplId);
-      console.log(`[Event] Đã bỏ active template: "${tplName}"`);
-    } else {
-      newIds = [...selectedTemplateIds, tplId];
-      console.log(`[Event] Đã active template: "${tplName}"`);
-    }
-    console.log("Danh sách Active Templates hiện tại:", newIds);
-    setSelectedTemplateIds(newIds);
+    // Update via helper to ensure dedupe and normalized ids
+    setActiveTemplates(nextIds);
+
+    console.log(
+      `[Event] ${isSelected ? "Đã bỏ" : "Đã active"} template: "${tplName}"`
+    );
+    console.log("Danh sách Active Templates hiện tại:", nextIds);
   };
 
   return (

@@ -147,7 +147,7 @@ export default function ExerciseScreen() {
             variant="headlineMedium"
             style={{
               textAlign: "center",
-              color: "#1E88E5",
+              color: "#003366",
               fontWeight: "bold",
               // position: "absolute",
               left: 0,
@@ -155,7 +155,7 @@ export default function ExerciseScreen() {
               top: 0,
             }}
           >
-            Danh sách bài tập
+            Exercise List
           </Text>
           {/* <Button
                     icon="arrow-left"
@@ -178,7 +178,7 @@ export default function ExerciseScreen() {
           }}
           textColor="#0D47A1"
         >
-          {showFilters ? "Ẩn bộ lọc" : "Hiển thị bộ lọc"}
+          {showFilters ? "Hide Filters" : "Show Filters"}
         </Button>
 
         {showFilters && (
@@ -207,7 +207,8 @@ export default function ExerciseScreen() {
 
               {/* Force */}
               <Text variant="titleMedium" style={sectionTitle}>
-                Lực tác động (Force)
+                
+                Force
               </Text>
               <View style={chipRow}>
                 {["push", "pull", "static"].map((item) => (
@@ -233,7 +234,8 @@ export default function ExerciseScreen() {
 
               {/* Level */}
               <Text variant="titleMedium" style={sectionTitle}>
-                Cấp độ (Level)
+                
+                Level
               </Text>
               <View style={chipRow}>
                 {["beginner", "intermediate", "advanced"].map((lvl) => (
@@ -259,7 +261,8 @@ export default function ExerciseScreen() {
 
               {/* Mechanic */}
               <Text variant="titleMedium" style={sectionTitle}>
-                Loại chuyển động (Mechanic)
+                
+                Mechanic
               </Text>
               <View style={chipRow}>
                 {["compound", "isolation"].map((m) => (
@@ -285,7 +288,8 @@ export default function ExerciseScreen() {
 
               {/* Equipment */}
               <Text variant="titleMedium" style={sectionTitle}>
-                Thiết bị (Equipment)
+               
+                Equipment
               </Text>
               <View style={chipRow}>
                 {["barbell", "dumbbell", "machine", "body only", "cable"].map((e) => (
@@ -311,7 +315,8 @@ export default function ExerciseScreen() {
 
               {/* Primary Muscles */}
               <Text variant="titleMedium" style={sectionTitle}>
-                Cơ chính (Primary Muscles)
+              
+                Primary Muscles
               </Text>
               <View style={chipRow}>
                 {["chest", "legs", "arms", "back", "shoulders"].map((item) => (
@@ -337,7 +342,8 @@ export default function ExerciseScreen() {
 
               {/* Category */}
               <Text variant="titleMedium" style={sectionTitle}>
-                Danh mục (Category)
+                
+                Category
               </Text>
               <View style={chipRow}>
                 {["strength", "cardio", "stretching"].map((cat) => (
@@ -363,7 +369,7 @@ export default function ExerciseScreen() {
 
               {/* Sort */}
               <Text variant="titleMedium" style={sectionTitle}>
-                Sắp xếp theo chữ cái (Alphabet)
+                Alphabet
               </Text>
               <View style={chipRow}>
                 {["name:asc", "name:desc"].map((s) => (
@@ -397,23 +403,24 @@ export default function ExerciseScreen() {
           style={{
             borderRadius: 10,
             marginBottom: 16,
-            backgroundColor: "#42A5F5",
+            backgroundColor: "#003366",
           }}
         >
-          Làm mới danh sách
+          
+          Refresh Exercise List
         </Button>
 
         {/* Danh sách bài tập */}
         {getExercisesQuery.isLoading ? (
           <View style={{ alignItems: "center", marginTop: 20 }}>
             <ActivityIndicator animating={true} color="#1E88E5" />
-            <Text style={{ marginTop: 8 }}>Đang tải bài tập...</Text>
+            <Text style={{ marginTop: 8 }}>Loading exercises...</Text>
           </View>
         ) : (
           <View>
             {exercises.length === 0 ? (
               <Text style={{ textAlign: "center", color: "#777", fontSize: 16 }}>
-                Không có bài tập nào phù hợp.
+                No exercises are suitable.
               </Text>
             ) : (
               exercises.map((item: Exercise, idx: number) => (
@@ -439,14 +446,14 @@ export default function ExerciseScreen() {
                       )}
                     />
                     <Card.Content>
-                      {item.force && <Text>Lực: {item.force}</Text>}
-                      {item.category && <Text>Danh mục: {item.category}</Text>}
+                      {item.force && <Text>Force: {item.force}</Text>}
+                      {item.category && <Text>Category: {item.category}</Text>}
                       <Divider style={{ marginVertical: 6 }} />
                       <Text style={{ fontSize: 12, color: "#666" }}>
-                        Cập nhật:{" "}
+                        Updated:{" "}
                         {item.updatedAt
                           ? new Date(item.updatedAt).toLocaleDateString()
-                          : "Không rõ"}
+                          : "None"}
                       </Text>
                     </Card.Content>
                   </Card>
@@ -472,13 +479,13 @@ export default function ExerciseScreen() {
             onPress={goFirstPage}
             icon="chevron-double-left"
             style={{
-              borderColor: "#1E88E5",
+              borderColor: "#003366",
               marginHorizontal: 1,
             }}
-            textColor="#1E88E5"
+            textColor="#003366"
             disabled={Number(filters.page) <= 1}
           >
-            Đầu
+            First
           </Button>
 
           <Button
@@ -486,13 +493,13 @@ export default function ExerciseScreen() {
             onPress={prevPage}
             icon="chevron-left"
             style={{
-              borderColor: "#1E88E5",
+              borderColor: "#003366",
               marginHorizontal: 1,
             }}
-            textColor="#1E88E5"
+            textColor="#003366"
             disabled={Number(filters.page) <= 1}
           >
-            Trước
+            Prev
           </Button>
 
           <Button
@@ -501,13 +508,13 @@ export default function ExerciseScreen() {
             icon="chevron-right"
             contentStyle={{ flexDirection: "row-reverse" }}
             style={{
-              borderColor: "#1E88E5",
+              borderColor: "#003366",
               marginHorizontal: 1,
             }}
-            textColor="#1E88E5"
+            textColor="#003366"
             disabled={Number(filters.page) >= totalPages}
           >
-            Tiếp
+            Next
           </Button>
 
            <Button
@@ -516,13 +523,13 @@ export default function ExerciseScreen() {
             icon="chevron-double-right"
             contentStyle={{ flexDirection: "row-reverse" }}
             style={{ 
-              borderColor: "#1E88E5", 
+              borderColor: "#003366", 
               marginHorizontal: 1, 
             }}
-            textColor="#1E88E5"
+            textColor="#003366"
             disabled={Number(filters.page) >= totalPages}
           >
-            Cuối
+            Last
           </Button>
           
         </View>
@@ -577,18 +584,18 @@ export default function ExerciseScreen() {
                       />
                     )}
 
-                    <Text>Lực: {selectedExercise.force || "?"}</Text>
-                    <Text>Cấp độ: {selectedExercise.level || "?"}</Text>
-                    <Text>Danh mục: {selectedExercise.category || "?"}</Text>
+                    <Text>Force: {selectedExercise.force || "?"}</Text>
+                    <Text>Level: {selectedExercise.level || "?"}</Text>
+                    <Text>Category: {selectedExercise.category || "?"}</Text>
 
                     <Text style={{ fontWeight: "bold", marginTop: 10 }}>
-                      Hướng dẫn:
+                      Instructions:
                     </Text>
                     {(selectedExercise.instructions || []).map((ins: string | number | bigint | boolean | React.ReactElement<unknown, string | React.JSXElementConstructor<any>> | Iterable<React.ReactNode> | React.ReactPortal | Promise<string | number | bigint | boolean | React.ReactPortal | React.ReactElement<unknown, string | React.JSXElementConstructor<any>> | Iterable<React.ReactNode> | null | undefined> | null | undefined, i: React.Key | null | undefined) => (
                       <Text key={i}>• {ins}</Text>
                     ))}
 
-                    <Text style={{ fontWeight: "bold", marginTop: 10 }}>Hình ảnh:</Text>
+                    <Text style={{ fontWeight: "bold", marginTop: 10 }}>Images:</Text>
                     <View
                       style={{
                         flexDirection: "row",
@@ -615,11 +622,11 @@ export default function ExerciseScreen() {
                       onPress={closeModal}
                       style={{
                         marginTop: 20,
-                        backgroundColor: "#1E88E5",
+                        backgroundColor: "#003366",
                         borderRadius: 10,
                       }}
                     >
-                      Đóng
+                      Close
                     </Button>
                   </>
                 )}

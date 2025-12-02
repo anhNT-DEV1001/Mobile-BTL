@@ -33,25 +33,24 @@ export function useSchedule() {
       setTemplates(templatesRes);
 
       if (scheduleRes) {
+        // Cập nhật form state ngay khi load xong để đảm bảo đồng bộ
         setName(scheduleRes.name);
         setType(scheduleRes.type || "");
         setReplay(scheduleRes.replay?.toString() || "1");
-        // Nếu BE trả templates là mảng, map ra danh sách id
+
         if (Array.isArray(scheduleRes.templates)) {
           const ids = scheduleRes.templates
             .map((t: any) =>
-              typeof t === "string"
-                ? t
-                : t?.id || t?._id || null
+              typeof t === "string" ? t : t?.id || t?._id || null
             )
             .filter((id: string | null) => !!id) as string[];
           setSelectedTemplateIds(ids);
+        } else {
+          setSelectedTemplateIds([]); 
         }
       }
     } catch (err: any) {
-      if (err?.statusCode !== 400) {
-        setError(err?.message || "Có lỗi xảy ra khi tải lịch tập");
-      }
+       // ... giữ nguyên
     } finally {
       setLoading(false);
     }
@@ -62,8 +61,20 @@ export function useSchedule() {
   }, [loadData]);
 
   const openModal = () => {
-    if (!schedule) {
-      // nếu chưa có schedule, reset form
+    if (schedule) {
+      setName(schedule.name);
+      setType(schedule.type || "");
+      setReplay(schedule.replay?.toString() || "1");
+            if (Array.isArray(schedule.templates)) {
+        const ids = schedule.templates
+            .map((t: any) => typeof t === "string" ? t : t?.id || t?._id || null)
+            .filter((id: any) => !!id);
+        setSelectedTemplateIds(ids);
+      } else {
+        setSelectedTemplateIds([]);
+      }
+    } else {
+      // Nếu tạo mới
       setName("");
       setType("");
       setReplay("1");
@@ -92,11 +103,12 @@ export function useSchedule() {
       replay: replay ? Number(replay) : undefined,
       templates: selectedTemplateIds,
     };
-
+    console.log("form---",payload);
     setSaving(true);
     setError(null);
     try {
       if (schedule) {
+        
         await updateSchedule(payload);
       } else {
         await createSchedule(payload);

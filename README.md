@@ -1,279 +1,173 @@
-# ỨNG DỤNG THỂ DỤC TẠI NHÀ
+-----
 
----
+# 🏋️ My Strength Level - Ứng dụng Quản lý Tập luyện & Sức khỏe
 
-## 1. Giới thiệu tổng quan
+## 📖 Giới thiệu
 
-**Ứng dụng "Thể dục tại nhà"** được thiết kế để cung cấp một nền tảng toàn diện, giúp người dùng rèn luyện sức khỏe hiệu quả ngay tại nhà hoặc phòng gym. Với mục tiêu cá nhân hóa và tiện lợi, ứng dụng này tích hợp các tính năng cốt lõi bao gồm: tìm kiếm và tham khảo bài tập, xem video hướng dẫn, theo dõi tiến độ cá nhân, và tạo lịch tập đơn giản.
+**My Strength Level** là ứng dụng di động hỗ trợ người dùng xây dựng lộ trình tập luyện cá nhân hóa, quản lý lịch tập, theo dõi các chỉ số cơ thể (BMI, BMR, TDEE) và tương tác với AI Personal Trainer.
 
----
+Dự án được xây dựng với mục tiêu giải quyết hạn chế của các ứng dụng hiện có (như MyFitnessPal, Nike Training Club) bằng cách tập trung sâu vào khả năng **tùy biến Template bài tập**, **lập lịch thông minh** và tích hợp **Chatbot AI** hỗ trợ kiến thức tập luyện.
 
-## 2. Mục tiêu dự án
+Dự án là bài tập lớn môn **Phát triển Ứng dụng cho thiết bị di động** - Học viện Công nghệ Bưu chính Viễn thông (PTIT).
 
-Mục tiêu chính của dự án là xây dựng một ứng dụng di động mạnh mẽ và thân thiện với người dùng. Các mục tiêu cụ thể bao gồm:
+-----
 
-* **Tìm kiếm & tham khảo bài tập:** Giúp người dùng dễ dàng tìm kiếm các bài tập phù hợp với mục tiêu của họ (tăng cơ, giảm cân, yoga, cardio).
-* **Hướng dẫn video:** Cung cấp video chất lượng cao và mô tả chi tiết, giúp người dùng thực hiện đúng kỹ thuật và tránh chấn thương.
-* **Theo dõi tiến độ:** Hỗ trợ người dùng ghi lại và theo dõi quá trình tập luyện qua nhật ký và biểu đồ thống kê trực quan.
-* **Tạo kế hoạch:** Cho phép người dùng tự tạo và quản lý các kế hoạch tập luyện cá nhân, giúp duy trì sự kỷ luật.
+## 🚀 Tính năng Chính
 
----
+### 1\. Quản lý Người dùng & Đo lường (Health & Profile)
 
-## 3. Đối tượng sử dụng
+  * **Authentication:** Đăng ký, Đăng nhập (JWT Access/Refresh Token), Bảo mật mật khẩu (Bcrypt).
+  * **Profile:** Quản lý thông tin cá nhân, cập nhật Avatar.
+  * **Đo lường sức khỏe:** Tự động tính toán và đánh giá BMI (theo chuẩn WHO & Asia-Pacific), BMR (Mifflin-St Jeor) và TDEE dựa trên mức độ vận động.
 
-Ứng dụng hướng tới những người muốn duy trì lối sống lành mạnh và chủ động rèn luyện thể chất, đặc biệt là:
+### 2\. Quản lý Tập luyện (Workout & Schedule)
 
-* Nam và nữ trong độ tuổi **18-40**.
-* Những người có lịch trình bận rộn, ưu tiên tập luyện tại nhà.
-* Người mới bắt đầu (**beginner**) và có kinh nghiệm trung cấp (**intermediate**).
+  * **Workout Templates:** Tạo, sửa, xóa các mẫu bài tập (Template) để tái sử dụng.
+  * **Schedule (Lịch tập):** Lên kế hoạch tập luyện theo tuần, gán Template vào lịch.
+  * **Tracking:** Ghi lại kết quả buổi tập (Sets, Reps, Weight), tính toán Volume tập luyện.
 
----
+### 3\. Hệ thống Bài tập (Exercises)
 
-## 4. Công nghệ sử dụng
+  * **Thư viện bài tập:** Danh sách bài tập đa dạng, hỗ trợ lọc theo nhóm cơ (Muscle), dụng cụ (Equipment), độ khó (Level).
+  * **Chi tiết bài tập:** Hướng dẫn tập luyện chi tiết kèm hình ảnh minh họa/GIF.
 
-Dự án được xây dựng trên một ngăn xếp công nghệ hiện đại, đảm bảo hiệu suất và khả năng mở rộng:
+### 4\. Tính năng Nâng cao
 
-* **Frontend:** **React Native** (iOS và Android) để xây dựng giao diện người dùng.
-* **Backend:** **NestJS** (Node.js) để xử lý logic phía máy chủ.
-* **Database:** **MongoDB** với Replica Set để lưu trữ dữ liệu một cách an toàn và có khả năng chịu lỗi.
+  * **Notification System:** Hệ thống nhắc nhở lịch tập tự động (Push Notifications) sử dụng cơ chế hàng đợi (Queue).
+  * **AI Chatbot:** "PT ảo" tích hợp LLM (Gemini) qua n8n workflow, hỗ trợ giải đáp thắc mắc và gợi ý bài tập.
 
----
+-----
 
-## 5. Các chức năng cốt lõi
+## 🛠 Công nghệ Sử dụng
 
-Đây là các tính năng bắt buộc để ứng dụng có thể hoạt động đầy đủ và đáp ứng nhu cầu cơ bản của người dùng:
+### 📱 Mobile App (Frontend)
 
-### 5.1. Đăng nhập và bảo mật
+  * **Framework:** React Native (Expo SDK 52).
+  * **Routing:** Expo Router (File-based routing).
+  * **State Management:**
+      * `Zustand`: Quản lý Global State (Auth, User Session).
+      * `TanStack Query (React Query)`: Quản lý Server State, Caching, Sync.
+  * **UI Library:** React Native Paper.
+  * **HTTP Client:** Axios (kèm Interceptors xử lý Token).
 
-* **Đăng ký tài khoản:** Bằng email.
-* **Đăng nhập:** Bằng email và mật khẩu.
-* **Bảo mật:** Sử dụng **JWT** và **refresh token** để bảo vệ dữ liệu người dùng.
+### 🔙 Backend Server
 
-### 5.2. Danh sách bài tập
+  * **Framework:** NestJS (Modular Architecture).
+  * **Language:** TypeScript.
+  * **Database:** MongoDB Replica Set (đảm bảo tính toàn vẹn dữ liệu và Transaction).
+  * **ORM:** Mongoose.
+  * **Queue & Cache:** Redis + BullMQ (xử lý tác vụ nền và thông báo).
+  * **API Docs:** Swagger UI.
 
-* **Danh mục bài tập:** Phân loại theo mục tiêu (**Tăng cơ**, **Giảm cân**, **Yoga**, **Cardio**).
-* **Tìm kiếm:** Cho phép tìm bài tập theo tên.
-* **Thông tin chi tiết:** Hiển thị mô tả, độ khó, số lần lặp lại (reps), và thời gian.
+### 🤖 AI & Automation
 
-### 5.3. Hướng dẫn video
+  * **Workflow:** n8n (Docker).
+  * **Model:** Google Gemini (thông qua API).
 
-* **Video hướng dẫn:** Xem video trực tiếp trong ứng dụng.
-* **Mô tả:** Có kèm theo hướng dẫn bằng văn bản và lưu ý từ huấn luyện viên.
-* **Yêu thích:** Lưu các bài tập ưa thích vào danh sách cá nhân.
+### Infrastructure
 
-### 5.4. Theo dõi tiến độ
+  * **Docker & Docker Compose:** Container hóa MongoDB Cluster, Redis và n8n.
 
-* **Ghi lại buổi tập:** Nhật ký ghi lại ngày, số reps, set, và thời gian.
-* **Lịch sử:** Hiển thị lịch sử luyện tập chi tiết.
-* **Thống kê:** Biểu đồ thống kê tiến độ theo tuần và tháng.
+-----
 
-### 5.5. Tùy chỉnh kế hoạch tập luyện
+## 📂 Cấu trúc Dự án
 
-* **Tạo kế hoạch:** Tự tạo lịch tập bằng cách chọn và sắp xếp các bài tập yêu thích.
-* **Chỉnh sửa/Xóa:** Dễ dàng thay đổi hoặc xóa kế hoạch đã tạo.
-* **Áp dụng kế hoạch:** Kích hoạt kế hoạch để bắt đầu theo dõi.
+Dự án được tổ chức theo mô hình Monorepo:
 
-### 5.6. Nhắc nhở lịch tập
+```bash
+Mobile-BTL/
+├── mb-server/           # Source code Backend (NestJS)
+│   ├── src/
+│   │   ├── modules/     # Các module chức năng (Auth, User, Workout, etc.)
+│   │   ├── common/      # Guards, Decorators, Filters, Utils
+│   │   └── notification/# Cron jobs & Queue processors
+│   ├── docker-compose.yml # Cấu hình Mongo Replica Set & Redis
+│   └── ...
+├── mobile/              # Source code Mobile App (Expo)
+│   ├── src/
+│   │   ├── app/         # Expo Router Screens
+│   │   ├── common/      # Components, Hooks, Stores, Services
+│   │   └── screens/     # Logic chi tiết từng màn hình
+│   └── ...
+└── README.md
+```
 
-* **Đặt giờ nhắc nhở:** Người dùng có thể tùy chỉnh thời gian nhận thông báo.
-* **Thông báo đẩy:** Gửi thông báo trực tiếp đến thiết bị di động (push notification).
-* **Bật/Tắt:** Cho phép người dùng quản lý chế độ nhắc nhở.
+-----
 
----
+## ⚙️ Hướng dẫn Cài đặt & Chạy Dự án
 
-## 6. Phân quyền cơ bản
+### 1\. Yêu cầu tiên quyết (Prerequisites)
 
-Hệ thống sẽ có hai loại người dùng chính:
+  * Node.js (\>= 18.x)
+  * Docker & Docker Compose
+  * Expo Go (trên thiết bị di động) hoặc Android Emulator/iOS Simulator.
 
-* **Admin:** Quản lý toàn bộ thông tin của ứng dụng như thêm/sửa/xóa bài tập, danh mục bài tập, v.v.
-* **User:** Sử dụng các chức năng cá nhân để theo dõi và cải thiện quá trình tập luyện của mình.
+### 2\. Cài đặt Cơ sở dữ liệu & Hạ tầng
 
-- thiết kế tăng dần theo level
+Dự án sử dụng MongoDB Replica Set và Redis chạy trên Docker.
 
-Tài liệu vẽ trục ý tưởng (nghiệp vụ ) 
-UX flow
-Schedule lập lịch
+```bash
+cd mb-server
 
+# Cấp quyền cho file key của Mongo (Bắt buộc để chạy Replica Set)
+chmod 400 mongo-key/mongo-keyfile
 
+# Khởi chạy các container
+docker-compose up -d
+```
 
+*Lưu ý: Đợi khoảng 1-2 phút để MongoDB khởi tạo Replica Set thành công.*
 
+### 3\. Chạy Backend (mb-server)
 
+```bash
+cd mb-server
 
+# Cài đặt thư viện
+npm install
 
+# Tạo file .env (Copy từ .env.example nếu có hoặc cấu hình như bên dưới)
+# Đảm bảo các biến môi trường cho MONGO_URI, REDIS, JWT_SECRET được thiết lập.
 
+# Chạy server ở chế độ development
+npm run dev
+```
 
+*Server sẽ chạy tại: `http://localhost:3000`*
+*Swagger Docs: `http://localhost:3000/api/docs`*
 
+### 4\. Chạy Mobile App (mobile)
 
+```bash
+cd mobile
 
+# Cài đặt thư viện
+npm install
 
+# Tạo file .env và trỏ API_URL về địa chỉ IP mạng LAN của máy tính bạn (không dùng localhost)
+# Ví dụ: EXPO_PUBLIC_API_URL=http://192.168.1.5:3000
 
+# Khởi chạy ứng dụng
+npx expo start
+```
 
+*Quét mã QR bằng ứng dụng **Expo Go** trên điện thoại để trải nghiệm.*
 
+-----
+-----
 
+## 👥 Thành viên Thực hiện (Nhóm 01)
 
+| Thành viên | Vai trò & Chức năng đảm nhận |
+| :--- | :--- |
+| **Bùi Quang Anh** | **Frontend & Backend:** Quản lý Template, Workout, Logic tính Level bài tập. Tích hợp dữ liệu hình ảnh (GIF). |
+| **Nguyễn Tuấn Anh** | **Backend Lead:** Auth (JWT, Refresh Token), Schedule, Notification System (Queue/Cron), Cấu trúc Source Code. |
+| **Trần Hoàng Anh** | **Frontend:** Danh sách bài tập, Bộ lọc (Filter), Chi tiết bài tập. **AI:** Tích hợp Chatbot AI. |
+| **Mai Thế Dương** | **Frontend:** UI/UX Authentication (Đăng nhập/Đăng ký), UI Quản lý Template & Workout. |
 
+-----
 
+-----
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+## 📝 License
+UNLICENSED.

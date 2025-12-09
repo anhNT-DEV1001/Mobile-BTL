@@ -53,7 +53,8 @@ Dự án là bài tập lớn môn **Phát triển Ứng dụng cho thiết bị
 ### 🔙 Backend Server
 
   * **Framework:** NestJS (Modular Architecture).
-  * **Language:** TypeScript.
+  * **Language:** TypeScript.# Đảm bảo các biến môi trường cho MONGO_URI, REDIS, JWT_SECRET được thiết lập.
+
   * **Database:** MongoDB Replica Set (đảm bảo tính toàn vẹn dữ liệu và Transaction).
   * **ORM:** Mongoose.
   * **Queue & Cache:** Redis + BullMQ (xử lý tác vụ nền và thông báo).
@@ -156,7 +157,7 @@ npx expo start
 -----
 -----
 
-## 👥 Thành viên Thực hiện (Nhóm 01)
+## 👥 Thành viên Thực hiện (Nhóm 02)
 
 | Thành viên | Vai trò & Chức năng đảm nhận |
 | :--- | :--- |

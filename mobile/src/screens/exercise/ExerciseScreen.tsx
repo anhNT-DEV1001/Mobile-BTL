@@ -1,12 +1,14 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
-  ScrollView,
+  FlatList,
   View,
   Image,
   LayoutAnimation,
   TouchableOpacity,
   Modal,
   SafeAreaView,
+  RefreshControl,
+  ScrollView,
 } from "react-native";
 import {
   Text,
@@ -61,14 +63,50 @@ export default function ExerciseScreen() {
   const [selectedExercise, setSelectedExercise] = useState<Exercise | null>(null);
   const [showModal, setShowModal] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
+  const [allExercises, setAllExercises] = useState<Exercise[]>([]);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
 
   const preURL = "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/";
 
-  useEffect(() => {
-    getExercisesQuery.refetch();
-  }, [filters]);
+  const currentPageExercises = ((getExercisesQuery as any)?.data?.items as Exercise[]) || [];
+  const totalItems = (getExercisesQuery as any)?.data?.total || 0;
+  const currentPage = Number(filters.page);
+  const hasMore = currentPage * Number(filters.limit) < totalItems;
 
-  const exercises = ((getExercisesQuery as any)?.data?.items as Exercise[]) || [];
+  // Khi filter thay đổi, reset về trang 1 và xóa data cũ
+  useEffect(() => {
+    setFilters((prev) => ({ ...prev, page: "1" }));
+    setAllExercises([]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    filters.q,
+    filters.force,
+    filters.level,
+    filters.mechanic,
+    filters.equipment,
+    filters.primaryMuscles,
+    filters.category,
+    filters.sort,
+  ]);
+
+  // Khi có data mới từ API, append vào list
+  useEffect(() => {
+    if (currentPageExercises.length > 0) {
+      if (currentPage === 1) {
+        setAllExercises(currentPageExercises);
+      } else {
+        setAllExercises((prev) => {
+          // Tránh duplicate
+          const existingIds = new Set(prev.map((e) => e._id));
+          const newItems = currentPageExercises.filter((e) => !existingIds.has(e._id));
+          return [...prev, ...newItems];
+        });
+      }
+    }
+    setIsLoadingMore(false);
+    setRefreshing(false);
+  }, [currentPageExercises]);
 
   const toggleFilter = (field: keyof Filters, value: string) => {
     setFilters((prev) => ({
@@ -77,29 +115,12 @@ export default function ExerciseScreen() {
     }));
   };
 
-  const goFirstPage = () => {
-    setFilters((prev) => ({
-      ...prev,
-      page: "1",
-    }));
-  };
-
-  const totalPages = Math.ceil(
-    ((getExercisesQuery as any)?.data?.total || 0) / Number(filters.limit || 1)
-  );
-
-  const goLastPage = () => {
-    setFilters((prev) => ({
-      ...prev,
-      page: totalPages.toString(),
-    }));
-  };
-
 
   const openModal = (exercise: Exercise) => {
     setSelectedExercise(exercise);
     setShowModal(true);
   };
+  
   const closeModal = () => {
     setShowModal(false);
     setSelectedExercise(null);
@@ -110,19 +131,22 @@ export default function ExerciseScreen() {
     setShowFilters(!showFilters);
   };
 
-  const nextPage = () => {
-    setFilters((prev) => ({
-      ...prev,
-      page: (Number(prev.page) + 1).toString(),
-    }));
-  };
+  const handleLoadMore = useCallback(() => {
+    if (!isLoadingMore && !getExercisesQuery.isLoading && hasMore) {
+      setIsLoadingMore(true);
+      setFilters((prev) => ({
+        ...prev,
+        page: (Number(prev.page) + 1).toString(),
+      }));
+    }
+  }, [isLoadingMore, getExercisesQuery.isLoading, hasMore]);
 
-  const prevPage = () => {
-    setFilters((prev) => ({
-      ...prev,
-      page: Math.max(1, Number(prev.page) - 1).toString(),
-    }));
-  };
+  const handleRefresh = useCallback(() => {
+    setRefreshing(true);
+    setAllExercises([]);
+    setFilters((prev) => ({ ...prev, page: "1" }));
+    getExercisesQuery.refetch();
+  }, []);
 
   const chipRow = {
     flexDirection: "row" as const,
@@ -138,72 +162,64 @@ export default function ExerciseScreen() {
     fontWeight: "bold" as const,
   };
 
-  return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: "#F1F5F9" }}>
-      <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 120 }}>
-        {/* Back + Title */}
-        <View style={{ marginBottom: 16 }}>
-          <Text
-            variant="headlineMedium"
-            style={{
-              textAlign: "center",
-              color: "#003366",
-              fontWeight: "bold",
-              // position: "absolute",
-              left: 0,
-              right: 0,
-              top: 0,
-            }}
-          >
-            Exercise List
-          </Text>
-          {/* <Button
-                    icon="arrow-left"
-                    mode="text"
-                    onPress={() => navigation.goBack()}
-                    textColor="#1E88E5"
-                    style={{ alignSelf: "flex-start" }} children={undefined}  
-            /> */}
-        </View>
-
-        {/* Hiển thị/ẩn bộ lọc */}
-        <Button
-          mode="contained-tonal"
-          icon={showFilters ? "filter-minus" : "filter"}
-          onPress={toggleFilters}
+  const renderHeader = () => (
+    <View style={{ paddingHorizontal: 16, paddingTop: 16 }}>
+      {/* Title */}
+      <View style={{ marginBottom: 16 }}>
+        <Text
+          variant="headlineMedium"
           style={{
-            marginBottom: 16,
-            backgroundColor: "#E3F2FD",
-            borderRadius: 10,
+            textAlign: "center",
+            color: "#003366",
+            fontWeight: "bold",
           }}
-          textColor="#0D47A1"
         >
-          {showFilters ? "Hide Filters" : "Show Filters"}
-        </Button>
+          Exercise List
+        </Text>
+      </View>
 
-        {showFilters && (
-          <View
-            style={{
-              backgroundColor: "#FFFFFF",
-              borderRadius: 12,
-              padding: 12,
-              marginBottom: 16,
-              shadowColor: "#000",
-              shadowOpacity: 0.05,
-              shadowRadius: 4,
-            }}
+      {/* Hiển thị/ẩn bộ lọc */}
+      <Button
+        mode="contained-tonal"
+        icon={showFilters ? "filter-minus" : "filter"}
+        onPress={toggleFilters}
+        style={{
+          marginBottom: 16,
+          backgroundColor: "#E3F2FD",
+          borderRadius: 10,
+        }}
+        textColor="#0D47A1"
+      >
+        {showFilters ? "Hide Filters" : "Show Filters"}
+      </Button>
+
+      {showFilters && (
+        <View
+          style={{
+            backgroundColor: "#FFFFFF",
+            borderRadius: 12,
+            padding: 12,
+            marginBottom: 16,
+            shadowColor: "#000",
+            shadowOpacity: 0.05,
+            shadowRadius: 4,
+            maxHeight: 450,
+          }}
+        >
+          <ScrollView 
+            nestedScrollEnabled={true}
+            showsVerticalScrollIndicator={true}
           >
-            <ScrollView nestedScrollEnabled>
-              <TextInput
-                mode="outlined"
-                label="Tìm kiếm theo tên"
-                value={filters.q}
-                onChangeText={(text) => setFilters({ ...filters, q: text })}
-                left={<TextInput.Icon icon="magnify" />}
-                style={{ marginBottom: 16, backgroundColor: "#fff" }}
-                outlineColor="#BBDEFB"
-                activeOutlineColor="#1E88E5"
-              />
+            <TextInput
+              mode="outlined"
+              label="Tìm kiếm theo tên"
+              value={filters.q}
+              onChangeText={(text) => setFilters({ ...filters, q: text })}
+              left={<TextInput.Icon icon="magnify" />}
+              style={{ marginBottom: 16, backgroundColor: "#fff" }}
+              outlineColor="#BBDEFB"
+              activeOutlineColor="#1E88E5"
+            />
 
               {/* Force */}
               <Text variant="titleMedium" style={sectionTitle}>
@@ -391,250 +407,207 @@ export default function ExerciseScreen() {
                   </Chip>
                 ))}
               </View>
-            </ScrollView>
-          </View>
-        )}
+          </ScrollView>
+        </View>
+      )}
+    </View>
+  );
 
-        {/* Refresh */}
-        <Button
-          mode="contained"
-          icon="refresh"
-          onPress={() => getExercisesQuery.refetch()}
-          style={{
-            borderRadius: 10,
-            marginBottom: 16,
-            backgroundColor: "#003366",
-          }}
-        >
-          
-          Refresh Exercise List
-        </Button>
+  const renderExerciseItem = ({ item }: { item: Exercise }) => (
+    <TouchableOpacity onPress={() => openModal(item)}>
+      <Card
+        style={{
+          marginBottom: 12,
+          marginHorizontal: 16,
+          backgroundColor: "#FFFFFF",
+          borderRadius: 12,
+        }}
+      >
+        <Card.Title
+          title={item.name}
+          titleVariant="titleLarge"
+          subtitle={`Cấp độ: ${item.level || "?"}`}
+          left={(props) => (
+            <Ionicons
+              {...props}
+              name="barbell-outline"
+              size={26}
+              color="#1E88E5"
+            />
+          )}
+        />
+        <Card.Content>
+          {item.force && <Text>Force: {item.force}</Text>}
+          {item.category && <Text>Category: {item.category}</Text>}
+          <Divider style={{ marginVertical: 6 }} />
+          <Text style={{ fontSize: 12, color: "#666" }}>
+            Updated:{" "}
+            {item.updatedAt
+              ? new Date(item.updatedAt).toLocaleDateString()
+              : "None"}
+          </Text>
+        </Card.Content>
+      </Card>
+    </TouchableOpacity>
+  );
 
-        {/* Danh sách bài tập */}
-        {getExercisesQuery.isLoading ? (
-          <View style={{ alignItems: "center", marginTop: 20 }}>
-            <ActivityIndicator animating={true} color="#1E88E5" />
-            <Text style={{ marginTop: 8 }}>Loading exercises...</Text>
-          </View>
-        ) : (
-          <View>
-            {exercises.length === 0 ? (
-              <Text style={{ textAlign: "center", color: "#777", fontSize: 16 }}>
-                No exercises are suitable.
-              </Text>
-            ) : (
-              exercises.map((item: Exercise, idx: number) => (
-                <TouchableOpacity key={idx} onPress={() => openModal(item)}>
-                  <Card
-                    style={{
-                      marginBottom: 12,
-                      backgroundColor: "#FFFFFF",
-                      borderRadius: 12,
-                    }}
-                  >
-                    <Card.Title
-                      title={item.name}
-                      titleVariant="titleLarge"
-                      subtitle={`Cấp độ: ${item.level || "?"}`}
-                      left={(props) => (
-                        <Ionicons
-                          {...props}
-                          name="barbell-outline"
-                          size={26}
-                          color="#1E88E5"
-                        />
-                      )}
-                    />
-                    <Card.Content>
-                      {item.force && <Text>Force: {item.force}</Text>}
-                      {item.category && <Text>Category: {item.category}</Text>}
-                      <Divider style={{ marginVertical: 6 }} />
-                      <Text style={{ fontSize: 12, color: "#666" }}>
-                        Updated:{" "}
-                        {item.updatedAt
-                          ? new Date(item.updatedAt).toLocaleDateString()
-                          : "None"}
-                      </Text>
-                    </Card.Content>
-                  </Card>
-                </TouchableOpacity>
-              ))
-            )}
-          </View>
-        )}
+  const renderFooter = () => {
+    if (!isLoadingMore) return null;
+    return (
+      <View style={{ paddingVertical: 20, alignItems: "center" }}>
+        <ActivityIndicator animating={true} color="#1E88E5" size="large" />
+        <Text style={{ marginTop: 8, color: "#666" }}>Loading more...</Text>
+      </View>
+    );
+  };
 
-        {/* Pagination */}
+  const renderEmpty = () => {
+    if (getExercisesQuery.isLoading && currentPage === 1) {
+      return (
+        <View style={{ alignItems: "center", marginTop: 40 }}>
+          <ActivityIndicator animating={true} color="#1E88E5" size="large" />
+          <Text style={{ marginTop: 8 }}>Loading exercises...</Text>
+        </View>
+      );
+    }
+    return (
+      <View style={{ alignItems: "center", marginTop: 40 }}>
+        <Text style={{ textAlign: "center", color: "#777", fontSize: 16 }}>
+          No exercises are suitable.
+        </Text>
+      </View>
+    );
+  };
+
+  return (
+    <SafeAreaView style={{ flex: 1, backgroundColor: "#F1F5F9" }}>
+      <FlatList
+        data={allExercises}
+        renderItem={renderExerciseItem}
+        keyExtractor={(item, index) => item._id || `exercise-${index}`}
+        ListHeaderComponent={renderHeader}
+        ListFooterComponent={renderFooter}
+        ListEmptyComponent={renderEmpty}
+        onEndReached={handleLoadMore}
+        onEndReachedThreshold={0.5}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={handleRefresh}
+            colors={["#1E88E5"]}
+            tintColor="#1E88E5"
+          />
+        }
+        contentContainerStyle={{ paddingBottom: 20 }}
+      />
+
+
+      {/* Popup chi tiết */}
+      <Modal
+        visible={showModal}
+        animationType="slide"
+        transparent={true}
+        onRequestClose={closeModal}
+      >
         <View
           style={{
-            flexDirection: "row",
+            flex: 1,
+            backgroundColor: "rgba(0,0,0,0.7)",
             justifyContent: "center",
-            alignItems: "center",
-            marginTop: 16,
-            gap: 1,
+            padding: 16,
           }}
-        >
-
-          <Button
-            mode="outlined"
-            onPress={goFirstPage}
-            icon="chevron-double-left"
-            style={{
-              borderColor: "#003366",
-              marginHorizontal: 1,
-            }}
-            textColor="#003366"
-            disabled={Number(filters.page) <= 1}
-          >
-            First
-          </Button>
-
-          <Button
-            mode="outlined"
-            onPress={prevPage}
-            icon="chevron-left"
-            style={{
-              borderColor: "#003366",
-              marginHorizontal: 1,
-            }}
-            textColor="#003366"
-            disabled={Number(filters.page) <= 1}
-          >
-            Prev
-          </Button>
-
-          <Button
-            mode="outlined"
-            onPress={nextPage}
-            icon="chevron-right"
-            contentStyle={{ flexDirection: "row-reverse" }}
-            style={{
-              borderColor: "#003366",
-              marginHorizontal: 1,
-            }}
-            textColor="#003366"
-            disabled={Number(filters.page) >= totalPages}
-          >
-            Next
-          </Button>
-
-           <Button
-            mode="outlined"
-            onPress={goLastPage}
-            icon="chevron-double-right"
-            contentStyle={{ flexDirection: "row-reverse" }}
-            style={{ 
-              borderColor: "#003366", 
-              marginHorizontal: 1, 
-            }}
-            textColor="#003366"
-            disabled={Number(filters.page) >= totalPages}
-          >
-            Last
-          </Button>
-          
-        </View>
-
-        {/* Popup chi tiết */}
-        <Modal
-          visible={showModal}
-          animationType="slide"
-          transparent={true}
-          onRequestClose={closeModal}
         >
           <View
             style={{
-              flex: 1,
-              backgroundColor: "rgba(0,0,0,0.7)",
-              justifyContent: "center",
+              backgroundColor: "#fff",
+              borderRadius: 12,
               padding: 16,
+              maxHeight: "90%",
             }}
           >
-            <View
-              style={{
-                backgroundColor: "#fff",
-                borderRadius: 12,
-                padding: 16,
-                maxHeight: "90%",
-              }}
-            >
-              <ScrollView>
-                {selectedExercise && (
-                  <>
-                    <Text
-                      style={{
-                        fontSize: 22,
-                        fontWeight: "bold",
-                        textAlign: "center",
-                        marginBottom: 10,
-                      }}
-                    >
-                      {selectedExercise.name}
-                    </Text>
-
-                    {selectedExercise.gif && (
-                      <Image
-                        source={{ uri: selectedExercise.gif }}
+            <FlatList
+              data={selectedExercise ? [selectedExercise] : []}
+              keyExtractor={() => "modal-content"}
+              renderItem={() => (
+                <>
+                  {selectedExercise && (
+                    <>
+                      <Text
                         style={{
-                          width: "100%",
-                          height: 250,
-                          borderRadius: 10,
+                          fontSize: 22,
+                          fontWeight: "bold",
+                          textAlign: "center",
                           marginBottom: 10,
                         }}
-                        resizeMode="cover"
-                      />
-                    )}
+                      >
+                        {selectedExercise.name}
+                      </Text>
 
-                    <Text>Force: {selectedExercise.force || "?"}</Text>
-                    <Text>Level: {selectedExercise.level || "?"}</Text>
-                    <Text>Category: {selectedExercise.category || "?"}</Text>
-
-                    <Text style={{ fontWeight: "bold", marginTop: 10 }}>
-                      Instructions:
-                    </Text>
-                    {(selectedExercise.instructions || []).map((ins: string | number | bigint | boolean | React.ReactElement<unknown, string | React.JSXElementConstructor<any>> | Iterable<React.ReactNode> | React.ReactPortal | Promise<string | number | bigint | boolean | React.ReactPortal | React.ReactElement<unknown, string | React.JSXElementConstructor<any>> | Iterable<React.ReactNode> | null | undefined> | null | undefined, i: React.Key | null | undefined) => (
-                      <Text key={i}>• {ins}</Text>
-                    ))}
-
-                    <Text style={{ fontWeight: "bold", marginTop: 10 }}>Images:</Text>
-                    <View
-                      style={{
-                        flexDirection: "row",
-                        flexWrap: "wrap",
-                        justifyContent: "center",
-                      }}
-                    >
-                      {(selectedExercise.images || []).map((img, idx) => (
+                      {selectedExercise.gif && (
                         <Image
-                          key={idx}
-                          source={{ uri: `${preURL}${img}` }}
+                          source={{ uri: selectedExercise.gif }}
                           style={{
-                            width: 100,
-                            height: 100,
-                            margin: 5,
+                            width: "100%",
+                            height: 250,
                             borderRadius: 10,
+                            marginBottom: 10,
                           }}
+                          resizeMode="cover"
                         />
-                      ))}
-                    </View>
+                      )}
 
-                    <Button
-                      mode="contained"
-                      onPress={closeModal}
-                      style={{
-                        marginTop: 20,
-                        backgroundColor: "#003366",
-                        borderRadius: 10,
-                      }}
-                    >
-                      Close
-                    </Button>
-                  </>
-                )}
-              </ScrollView>
-            </View>
+                      <Text>Force: {selectedExercise.force || "?"}</Text>
+                      <Text>Level: {selectedExercise.level || "?"}</Text>
+                      <Text>Category: {selectedExercise.category || "?"}</Text>
+
+                      <Text style={{ fontWeight: "bold", marginTop: 10 }}>
+                        Instructions:
+                      </Text>
+                      {(selectedExercise.instructions || []).map((ins: any, i: number) => (
+                        <Text key={i}>• {ins}</Text>
+                      ))}
+
+                      <Text style={{ fontWeight: "bold", marginTop: 10 }}>Images:</Text>
+                      <View
+                        style={{
+                          flexDirection: "row",
+                          flexWrap: "wrap",
+                          justifyContent: "center",
+                        }}
+                      >
+                        {(selectedExercise.images || []).map((img, idx) => (
+                          <Image
+                            key={idx}
+                            source={{ uri: `${preURL}${img}` }}
+                            style={{
+                              width: 100,
+                              height: 100,
+                              margin: 5,
+                              borderRadius: 10,
+                            }}
+                          />
+                        ))}
+                      </View>
+
+                      <Button
+                        mode="contained"
+                        onPress={closeModal}
+                        style={{
+                          marginTop: 20,
+                          backgroundColor: "#003366",
+                          borderRadius: 10,
+                        }}
+                      >
+                        Close
+                      </Button>
+                    </>
+                  )}
+                </>
+              )}
+            />
           </View>
-        </Modal>
-      </ScrollView>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 }

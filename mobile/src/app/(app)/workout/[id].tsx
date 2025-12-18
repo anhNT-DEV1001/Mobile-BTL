@@ -52,6 +52,7 @@ export default function WorkoutDetailScreen() {
         q: searchQuery,
         equipment: selectedEquipment || undefined,
         primaryMuscles: selectedMuscle || undefined,
+        sort: 'name:asc', // Sort exercises alphabetically from A to Z
     });
 
     // Load and append exercises when catalog changes
